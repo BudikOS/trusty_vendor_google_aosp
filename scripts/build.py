@@ -325,7 +325,7 @@ def create_uuid_map(args, project):
         return f'{time:0{width}x}'
 
     proj_buildroot = os.path.join(args.build_root, "build-" + project)
-    filename = os.path.join(args.archive, f"{project}-{args.buildid}-uuid-map.txt")
+    uuidmapfile = os.path.join(args.archive, "uuid-map.txt")
     zipfile = os.path.join(args.archive, f"{project}-{args.buildid}.syms.zip")
     sym_files = list(pathlib.Path(proj_buildroot).rglob("*.syms.elf"))
 
@@ -344,18 +344,19 @@ def create_uuid_map(args, project):
                             f'{clock_seq_and_node[2]}{clock_seq_and_node[3]}'
                             f'{clock_seq_and_node[4]}{clock_seq_and_node[5]}'
                             f'{clock_seq_and_node[6]}{clock_seq_and_node[7]}')
-            with open(filename, 'a', encoding='utf-8') as f:
+            with open(uuidmapfile, 'a', encoding='utf-8') as f:
                 f.write(f'{uuid_str}, {file.relative_to(proj_buildroot)}\n')
 
-    if os.path.exists(filename):
+    if os.path.exists(uuidmapfile):
         with ZipFile(zipfile, 'a', compression=ZIP_DEFLATED) as zip_archive:
-            zip_file(zip_archive, filename)
-        os.remove(filename)
+            zip_file(zip_archive, uuidmapfile)
+        os.remove(uuidmapfile)
 
 def create_scripts_archive(args, project):
     """Create an archive for the scripts"""
     coverage_script = os.path.join(script_dir, "genReport.py")
-    scripts_zip = os.path.join(args.archive, "scripts-" + args.buildid + ".zip")
+    scripts_zip = os.path.join(args.archive,
+                               f"{project}-{args.buildid}.scripts.zip")
     if not os.path.exists(coverage_script):
         print("Coverage script does not exist!")
         return
