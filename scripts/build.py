@@ -486,6 +486,8 @@ def create_test_map(args, build_config, projects):
                              "needs": []}
                 if hasattr(test, 'need') and hasattr(test.need, 'flags'):
                     test_obj["needs"] = list(test.need.flags)
+                if hasattr(test, 'port_type'):
+                    test_obj["type"] = str(test.port_type)
 
                 test_map["ports"].append(test_obj)
 
