@@ -587,8 +587,8 @@ def main(default_config=None):
         print("Skip build for", args.project)
     else:
         build(args)
-        archive(build_config, args)
         create_test_map(args, build_config, projects)
+        archive(build_config, args)
 
     # Run tests
     if not args.skip_tests:
