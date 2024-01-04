@@ -33,6 +33,8 @@ import re
 import subprocess
 import sys
 import time
+
+from enum import Enum
 from typing import Optional
 from collections import namedtuple
 
@@ -41,9 +43,9 @@ from trusty_build_config import TrustyRebootCommand, TrustyHostTest
 from trusty_build_config import TrustyAndroidTest, TrustyBuildConfig
 
 
-TestResult = namedtuple("TestResult", "test passed retried")
+TestResult = namedtuple("TestResult", "test status retried")
 
-
+TEST_STATUS = Enum('TEST_STATUS', ['PASSED', 'FAILED', 'SKIPPED'])
 class TestResults(object):
     """Stores test results.
 
@@ -60,23 +62,26 @@ class TestResults(object):
     def __init__(self, project):
         """Inits TestResults with project name and empty test results."""
         self.project = project
-        self.passed = True
+        self.status = TEST_STATUS.PASSED
         self.passed_count = 0
         self.failed_count = 0
+        self.skipped_count = 0
         self.flaked_count = 0
         self.retried_count = 0
         self.test_results = []
 
-    def add_result(self, test: str, passed: bool, retried: bool):
+    def add_result(self, test: str, status: TEST_STATUS, retried: bool):
         """Add a test result."""
-        self.test_results.append(TestResult(test, passed, retried))
-        if passed:
+        self.test_results.append(TestResult(test, status, retried))
+        self.status = status
+        if status == TEST_STATUS.PASSED:
             self.passed_count += 1
             if retried:
                 self.flaked_count += 1
-        else:
-            self.passed = False
+        elif status == TEST_STATUS.FAILED:
             self.failed_count += 1
+        elif status == TEST_STATUS.SKIPPED:
+            self.skipped_count += 1
 
         if retried:
             self.retried_count += 1
@@ -84,21 +89,25 @@ class TestResults(object):
     def print_results(self, print_failed_only=False):
         """Print test results."""
         if print_failed_only:
-            if self.passed:
+            if self.status == TEST_STATUS.FAILED:
                 return
             sys.stdout.flush()
             out = sys.stderr
         else:
             out = sys.stdout
-        test_count = self.passed_count + self.failed_count
+        test_count = self.passed_count + self.failed_count + self.skipped_count
+        test_attempted = self.passed_count + self.failed_count
         out.write("\n"
-                  f"Ran {test_count} tests for project {self.project}.\n")
+                  f"There were {test_count} defined for project {self.project}.\n"
+                  f"{test_attempted} ran and {self.skipped_count} were skipped.")
         if test_count:
             for result in self.test_results:
-                match (result.passed, result.retried, print_failed_only):
-                    case (False, _, _):
+                match (result.status, result.retried, print_failed_only):
+                    case (TEST_STATUS.FAILED, _, _):
                         out.write(f"[  FAILED  ] {result.test}\n")
-                    case (True, retried, False):
+                    case (TEST_STATUS.SKIPPED, _, False):
+                        out.write(f"[  SKIPPED ] {result.test}\n")
+                    case (TEST_STATUS.PASSED, retried, False):
                         out.write(f"[       OK ] {result.test}\n")
                         if retried:
                             out.write(f"WARNING: {result.test} was re-run and "
@@ -110,6 +119,8 @@ class TestResults(object):
                 out.write(f"[  PASSED  ] {self.passed_count} tests.\n")
             if self.failed_count:
                 out.write(f"[  FAILED  ] {self.failed_count} tests.\n")
+            if self.skipped_count:
+                out.write(f"[  SKIPPED ] {self.skipped_count} tests.\n")
             if self.flaked_count > 0:
                 out.write(f"WARNING: {self.flaked_count} tests passed when "
                           "re-run which indicates that they may be flaky.\n")
@@ -134,19 +145,23 @@ class MultiProjectTestResults():
         self.failed_projects = []
         self.tests_passed = 0
         self.tests_failed = 0
+        self.tests_skipped = 0
         self.had_passes = 0
         self.had_failures = 0
+        self.had_skip = 0
 
         for result in self.test_results:
-            if not result.passed:
+            if result.status == TEST_STATUS.FAILED:
                 self.failed_projects.append(result.project)
             self.tests_passed += result.passed_count
             self.tests_failed += result.failed_count
+            self.tests_skipped += result.skipped_count
             if result.passed_count:
                 self.had_passes += 1
             if result.failed_count:
                 self.had_failures += 1
-
+            if result.skipped_count:
+                self.had_skip += 1
 
     def print_results(self):
         """Prints the test results to stdout and stderr."""
@@ -160,6 +175,10 @@ class MultiProjectTestResults():
         if self.had_failures:
             sys.stdout.write(f"[  FAILED  ] {self.tests_failed} tests in "
                              f"{self.had_failures} projects.\n")
+            sys.stdout.flush()
+        if self.had_skip:
+            sys.stdout.write(f"[  SKIPPED ] {self.tests_skipped} tests in "
+                             f"{self.had_skip} projects.\n")
             sys.stdout.flush()
 
             # Print the failed tests again to stderr as the build server will
@@ -275,10 +294,8 @@ def run_tests(
                 run = importlib.import_module("run")
             sys.path.pop()
         except ImportError:
-            print('No Run Module for target/config')
             return None
         except ModuleNotFoundError:
-            print('No Run Module for target/config')
             return None
 
         return run
@@ -362,9 +379,13 @@ def run_tests(
                     test_runner = None
                 status = run_test(test, parent_test, retry=False)
             else:
-                test_results.add_result(test.name, status == 0, not retry)
+                if status == 0:
+                    test_results.add_result(test.name, TEST_STATUS.PASSED, not retry)
+                else:
+                    test_results.add_result(test.name, TEST_STATUS.FAILED, not retry)
             return status
         else:
+            test_results.add_result(test.name, TEST_STATUS.SKIPPED, not retry)
             return 0 # success
 
     # the retry mechanism is intended to allow a batch run of all tests to pass
