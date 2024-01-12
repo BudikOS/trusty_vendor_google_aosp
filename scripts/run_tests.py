@@ -62,7 +62,7 @@ class TestResults(object):
     def __init__(self, project):
         """Inits TestResults with project name and empty test results."""
         self.project = project
-        self.status = TEST_STATUS.PASSED
+        self.passed = True
         self.passed_count = 0
         self.failed_count = 0
         self.skipped_count = 0
@@ -70,17 +70,17 @@ class TestResults(object):
         self.retried_count = 0
         self.test_results = []
 
-    def add_result(self, test: str, status: TEST_STATUS, retried: bool):
+    def add_result(self, test: str, cur_test_status: TEST_STATUS, retried: bool):
         """Add a test result."""
-        self.test_results.append(TestResult(test, status, retried))
-        self.status = status
-        if status == TEST_STATUS.PASSED:
+        self.test_results.append(TestResult(test, cur_test_status, retried))
+        if cur_test_status == TEST_STATUS.PASSED:
             self.passed_count += 1
             if retried:
                 self.flaked_count += 1
-        elif status == TEST_STATUS.FAILED:
+        elif cur_test_status == TEST_STATUS.FAILED:
             self.failed_count += 1
-        elif status == TEST_STATUS.SKIPPED:
+            self.passed = False
+        elif cur_test_status == TEST_STATUS.SKIPPED:
             self.skipped_count += 1
 
         if retried:
@@ -89,7 +89,7 @@ class TestResults(object):
     def print_results(self, print_failed_only=False):
         """Print test results."""
         if print_failed_only:
-            if self.status == TEST_STATUS.FAILED:
+            if self.passed:
                 return
             sys.stdout.flush()
             out = sys.stderr
@@ -151,7 +151,7 @@ class MultiProjectTestResults():
         self.had_skip = 0
 
         for result in self.test_results:
-            if result.status == TEST_STATUS.FAILED:
+            if not result.passed:
                 self.failed_projects.append(result.project)
             self.tests_passed += result.passed_count
             self.tests_failed += result.failed_count
