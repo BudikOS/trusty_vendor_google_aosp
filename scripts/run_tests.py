@@ -296,8 +296,6 @@ def run_tests(
             sys.path.pop()
         except ImportError:
             return None
-        except ModuleNotFoundError:
-            return None
 
         return run
 
