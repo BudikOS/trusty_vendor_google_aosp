@@ -38,7 +38,7 @@ from enum import Enum
 from typing import Optional
 from collections import namedtuple
 
-from trusty_build_config import PORT_TYPE, TrustyTest, TrustyCompositeTest
+from trusty_build_config import PortType, TrustyTest, TrustyCompositeTest
 from trusty_build_config import TrustyRebootCommand, TrustyHostTest
 from trusty_build_config import TrustyAndroidTest, TrustyBuildConfig
 
@@ -339,7 +339,7 @@ def run_tests(
             case TrustyTest():
                 # Benchmark runs on QEMU are meaningless and take a lot of CI time
                 # One can still run the bootport test manually if desired
-                if test.port_type == PORT_TYPE.BENCHMARK:
+                if test.port_type == PortType.BENCHMARK:
                     ignore_tests = True
                 else:
                     if isinstance(test, TrustyAndroidTest):
