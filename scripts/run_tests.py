@@ -256,9 +256,9 @@ def run_tests(
     project: str,
     run_disabled_tests: bool = False,
     test_filters: Optional[list[re.Pattern]] = None,
-    verbose: bool=False,
-    debug_on_error: bool=  False,
-    emulator:bool=True
+    verbose: bool = False,
+    debug_on_error: bool = False,
+    emulator: bool = True
 ) -> TestResults:
     """Run tests for a project.
 
@@ -426,9 +426,9 @@ def test_projects(
     projects: list[str],
     run_disabled_tests: bool = False,
     test_filters: Optional[list[re.Pattern]] = None,
-    verbose: bool=False,
-    debug_on_error: bool=  False,
-    emulator: bool=True
+    verbose: bool = False,
+    debug_on_error: bool = False,
+    emulator: bool = True
 ) -> MultiProjectTestResults:
     """Run tests for multiple project.
 
