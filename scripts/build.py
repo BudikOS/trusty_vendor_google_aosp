@@ -475,18 +475,27 @@ def get_build_deps(project_name, project, project_names, already_built):
         project_names.append(project_name)
 
 def create_test_map(args, build_config, projects):
-    project_type_prefix = re.compile("([^:]+:)+")
     for project_name in projects:
         test_map = {}
         test_map["ports"] = []
+        port_names = set()
+        duplicates = set()
         project = build_config.get_project(project_name)
 
         if not project or not project.tests:
             return
 
-        for test in project.tests:
-            test_obj = { "port_name": re.sub(project_type_prefix, "", test.name),
+        tests_list = filter(lambda t: t.name.startswith("android-port-test:android-test:"),project.tests)
+        for test in tests_list:
+            port_name = re.sub("android-port-test:android-test:", "", test.name)
+            if port_name in port_names:
+                duplicates.add(port_name)
+                continue
+            port_names.add(port_name)
+
+            test_obj = { "port_name": port_name,
                          "needs": []}
+
             if hasattr(test, 'need') and hasattr(test.need, 'flags'):
                 test_obj["needs"] = list(test.need.flags)
             if hasattr(test, 'port_type'):
@@ -504,10 +513,17 @@ def create_test_map(args, build_config, projects):
 
             test_map["ports"].append(test_obj)
 
+        if len(duplicates) > 0:
+            print("ERROR: The following ports have been included multipe times")
+            for port in duplicates:
+                print(port)
+            sys.exit(-1)
+
         project_buildroot = os.path.join(args.build_root, "build-" + project_name)
         zip_path = os.path.join(project_buildroot, "trusty_test_package.zip")
         with ZipFile(zip_path, 'a', compression=ZIP_DEFLATED) as zipf:
             zipf.writestr(project_name + "-test-map.json", json.dumps(test_map, indent=4))
+
 
 def main(default_config=None, emulator=True):
     top = os.path.abspath(os.path.join(script_dir, "../../../../.."))
