@@ -125,7 +125,12 @@ class TrustyAndroidTest(TrustyTest):
         super().__init__(nameprefix + name, cmd, enabled, port_type)
         self.shell_command = command
         self.need = need
+        if not self.need:
+            self.need = TrustyPortTestFlags()
 
+    def needs(self, **need):
+        self.need.set(**need)
+        return self
 
 class TrustyPortTest(TrustyTest):
     """Stores a trusty port name for a test to run."""
