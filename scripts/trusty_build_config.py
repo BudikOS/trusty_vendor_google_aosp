@@ -114,8 +114,9 @@ class TrustyHostTest(TrustyTest):
 class TrustyAndroidTest(TrustyTest):
     """Stores a test name and command to run inside Android"""
 
-    def __init__(self, name, command, need = None, port_type = PortType.TEST, enabled=True, nameprefix="", runargs=(),
-                 timeout=None):
+    def __init__(self, name, command, need=TrustyPortTestFlags(),
+                 port_type=PortType.TEST, enabled=True, nameprefix="",
+                 runargs=(), timeout=None):
         nameprefix = nameprefix + "android-test:"
         cmd = ["run", "--headless", "--shell-command", command]
         if timeout:
@@ -125,12 +126,11 @@ class TrustyAndroidTest(TrustyTest):
         super().__init__(nameprefix + name, cmd, enabled, port_type)
         self.shell_command = command
         self.need = need
-        if not self.need:
-            self.need = TrustyPortTestFlags()
 
     def needs(self, **need):
         self.need.set(**need)
         return self
+
 
 class TrustyPortTest(TrustyTest):
     """Stores a trusty port name for a test to run."""
