@@ -415,6 +415,7 @@ def create_uuid_map(args, project):
             zip_file(zip_archive, uuidmapfile)
         os.remove(uuidmapfile)
 
+
 def create_scripts_archive(args, project):
     """Create an archive for the scripts"""
     coverage_script = os.path.join(script_dir, "genReport.py")
@@ -426,6 +427,7 @@ def create_scripts_archive(args, project):
 
     with ZipFile(scripts_zip, 'a', compression=ZIP_DEFLATED) as zip_archive:
         zip_file(zip_archive, coverage_script)
+
 
 def archive(build_config, args):
     if args.archive is None:
@@ -494,10 +496,11 @@ def get_build_deps(project_name, project, project_names, already_built):
                            already_built)
         project_names.append(project_name)
 
+
 def create_test_map(args, build_config, projects):
     for project_name in projects:
         test_map = {}
-        test_map["ports"] = []  # TODO: should probably be called port_tests
+        test_map["ports"] = []
         port_names = set()
         duplicates = set()
         project = build_config.get_project(project_name)
@@ -509,7 +512,7 @@ def create_test_map(args, build_config, projects):
         for test in project.tests:
             if not test.name.startswith(project_type_prefix):
                 continue
-            port_name = test.name.replace(project_type_prefix, "")
+            port_name = re.sub(project_type_prefix, "", test.name)
             if port_name in port_names:
                 duplicates.add(port_name)
                 continue
@@ -523,18 +526,11 @@ def create_test_map(args, build_config, projects):
             if hasattr(test, 'port_type'):
                 test_obj["type"] = str(test.port_type)
 
-            # BUG:  this branch is never taken because composite tests don't
-            #       start with `project_type_prefix` so the loop continues
-            #       without ever processing composite tests. This means that
-            #       tests in the sequence are not present in the output JSON.
             if isinstance(test, trusty_build_config.TrustyCompositeTest):
                 test_obj["sequence"] = []
 
                 for subtest in test.sequence:
-                    # TODO: verify that project_type_prefix is defined correctly
-                    # TODO: shouldn't this be called test_type_prefix?
-                    #       (android, boot, host are the test types...)
-                    subtest_name = subtest.name.replace(project_type_prefix, "")
+                    subtest_name = re.sub(project_type_prefix, "", subtest.name)
                     test_obj["sequence"].append(subtest_name)
                     if hasattr(subtest, 'need') and hasattr(subtest.need,
                                                             'flags'):
@@ -554,7 +550,7 @@ def create_test_map(args, build_config, projects):
         for test in project.tests:
             if not test.name.startswith("android-test:"):
                 continue
-            command_name = test.name.replace("android-test:", "")
+            command_name = re.sub("android-test:", "", test.name)
             command_obj = { "command_name": command_name, "needs": [] }
 
             if hasattr(test, 'need') and hasattr(test.need, 'flags'):
@@ -571,6 +567,7 @@ def create_test_map(args, build_config, projects):
         with ZipFile(zip_path, 'a', compression=ZIP_DEFLATED) as zipf:
             zipf.writestr(project_name + "-test-map.json",
                           json.dumps(test_map, indent=4))
+
 
 def main(default_config=None, emulator=True):
     top = os.path.abspath(os.path.join(script_dir, "../../../../.."))
