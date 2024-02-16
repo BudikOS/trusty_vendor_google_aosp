@@ -37,6 +37,7 @@ from zipfile import ZipFile, ZipInfo, ZIP_DEFLATED
 
 import run_tests
 import trusty_build_config
+from log_processor import LogEngine
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -285,12 +286,31 @@ def build(args):
 
     for project in args.project:
         cmd = (f'export BUILDROOT={args.build_root};'
-               f'export BUILDID={args.buildid}; nice $BUILDTOOLS_BINDIR/make {project} '
+               f'export BUILDID={args.buildid};'
+               f'nice $BUILDTOOLS_BINDIR/make {project} '
                f'-f $LKROOT/makefile -j {args.jobs}')
         # Call envsetup.  If it fails, abort.
         envsetup = os.path.join(script_dir, "envsetup.sh")
         cmd = f"source {envsetup:s} && ({cmd:s})"
-        status = subprocess.call(cmd, shell=True, executable="/bin/bash")
+
+        # check if we are attached to a real terminal
+        terminal_output = sys.stdout.isatty()
+
+        if args.color_log and terminal_output:
+            # postprocess output with custom log processor
+
+            # define additional env variable for make to generate log markers
+            cmd = f'export LOG_POSTPROCESSING=1; {cmd:s}'
+
+            with (open(project + '.log', 'wt', encoding="utf-8") as log_file,
+                  LogEngine(log_file) as log_engine):
+                status = subprocess.call(cmd, shell=True,
+                                         executable="/bin/bash",
+                                         stdout=log_engine.stdout,
+                                         stderr=log_engine.stderr)
+        else: # no output intercepting
+            status = subprocess.call(cmd, shell=True, executable="/bin/bash")
+
         print("cmd: '" + cmd + "' returned", status)
         if status:
             failed.append(project)
@@ -363,9 +383,9 @@ def create_uuid_map(args, project):
 
     def time_from_bytes(f, n: int) -> str:
         """Read n bytes from f as an int, and convert that int to a string."""
-        time = int.from_bytes(f.read(n), byteorder='little')
+        rtime = int.from_bytes(f.read(n), byteorder='little')
         width = 2 * n
-        return f'{time:0{width}x}'
+        return f'{rtime:0{width}x}'
 
     proj_buildroot = os.path.join(args.build_root, "build-" + project)
     uuidmapfile = os.path.join(args.archive, "uuid-map.txt")
@@ -579,6 +599,8 @@ def main(default_config=None, emulator=True):
                         "build-config file.", default=default_config)
     parser.add_argument("--android", type=str,
                         help="Path to an Android build to run tests against.")
+    parser.add_argument("--color-log", action="store_true",
+                        help="Use colored build logs with pinned status lines.")
     args = parser.parse_args()
 
     build_config = trusty_build_config.TrustyBuildConfig(
