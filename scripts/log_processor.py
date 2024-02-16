@@ -77,8 +77,8 @@ class ModuleQueue:
         self.active = {}
 
     def len(self):
-        assert (len(self.queued) == len(self.active),
-            "lengths of queued and active should be always equal")
+        diagnostic = "lengths of queued and active should be always equal"
+        assert len(self.queued) == len(self.active), diagnostic
         return len(self.queued)
 
     def insert(self, key, val: tuple[str, bool]):
