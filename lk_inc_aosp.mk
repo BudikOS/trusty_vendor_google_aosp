@@ -13,10 +13,8 @@
 # limitations under the License.
 #
 
-LKROOT ?= external/lk
-
-LKINC ?=  trusty/kernel \
-          external/lk \
+LKINC ?=  $(LKROOT) \
+          trusty/kernel \
           external/headers \
           external/trusty/headers \
           trusty/hardware/nxp \
