@@ -257,7 +257,8 @@ def run_tests(
     run_disabled_tests: bool = False,
     test_filters: Optional[list[re.Pattern]] = None,
     verbose: bool=False,
-    debug_on_error: bool=  False
+    debug_on_error: bool=  False,
+    emulator:bool=True
 ) -> TestResults:
     """Run tests for a project.
 
@@ -317,6 +318,9 @@ def run_tests(
 
         test_start_time = time.time()
         ignore_tests = False
+
+        if not emulator and not isinstance(test, TrustyHostTest):
+            return 0
 
         match test:
             case TrustyHostTest():
@@ -426,6 +430,7 @@ def test_projects(
     test_filters: Optional[list[re.Pattern]] = None,
     verbose: bool=False,
     debug_on_error: bool=  False,
+    emulator: bool=True
 ) -> MultiProjectTestResults:
     """Run tests for multiple project.
 
@@ -457,6 +462,7 @@ def test_projects(
             test_filters=test_filters,
             verbose=verbose,
             debug_on_error=debug_on_error,
+            emulator=emulator
         ))
     return MultiProjectTestResults(results)
 
