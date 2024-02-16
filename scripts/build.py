@@ -37,6 +37,14 @@ from zipfile import ZipFile, ZipInfo, ZIP_DEFLATED
 
 import run_tests
 import trusty_build_config
+from trusty_build_config import (
+    TrustyAndroidTest,
+    TrustyBuildConfig,
+    TrustyPortTest,
+    TrustyCommand,
+    TrustyCompositeTest,
+)
+
 from log_processor import LogEngine
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -48,6 +56,7 @@ GEN_MANIFEST_MAKEFILE_PATH = "trusty/user/base/make/gen_manifest.mk"
 
 ZIP_CREATE_SYSTEM_UNIX = 3
 SYMLINK_MODE = stat.S_IFLNK | stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO
+
 
 def get_new_build_id(build_root):
     """Increment build-id file and return new build-id number."""
@@ -133,6 +142,7 @@ def archive_symlink(zip_archive, arcname, target):
     zinfo.external_attr = SYMLINK_MODE << 16
     zip_archive.writestr(zinfo, target)
 
+
 def is_child_of_any(path, possible_parents):
     for possible_parent in possible_parents:
         if path.startswith(possible_parent):
@@ -162,20 +172,25 @@ def archive_dir(zip_archive, src, dest, omit=()):
             dir_path = os.path.join(root, d)
 
             if os.path.islink(dir_path):
-                archive_dest = os.path.join(dest, os.path.relpath(dir_path,
-                                                                  start=src))
-                archive_symlink(zip_archive, archive_dest,
-                                os.readlink(dir_path))
+                archive_dest = os.path.join(
+                    dest, os.path.relpath(dir_path, start=src)
+                )
+                archive_symlink(
+                    zip_archive, archive_dest, os.readlink(dir_path)
+                )
 
         for f in files:
             file_path = os.path.join(root, f)
-            archive_dest = os.path.join(dest, os.path.relpath(file_path,
-                                                              start=src))
+            archive_dest = os.path.join(
+                dest, os.path.relpath(file_path, start=src)
+            )
             if os.path.islink(file_path):
-                archive_symlink(zip_archive, archive_dest,
-                                os.readlink(file_path))
+                archive_symlink(
+                    zip_archive, archive_dest, os.readlink(file_path)
+                )
             else:
                 zip_archive.write(file_path, archive_dest)
+
 
 def archive_file(zip_archive, src_file, dest_dir="", optional=False):
     """Add a file to a ZIP file.
@@ -192,19 +207,21 @@ def archive_file(zip_archive, src_file, dest_dir="", optional=False):
     """
     if not os.path.exists(src_file) and optional:
         return
-    zip_archive.write(src_file,
-                      os.path.join(dest_dir, os.path.basename(src_file)))
+    zip_archive.write(
+        src_file, os.path.join(dest_dir, os.path.basename(src_file))
+    )
 
 
 def assemble_sdk(build_config, args):
     """Assemble Trusty SDK archive"""
     filename = os.path.join(args.archive, "trusty_sdk-" + args.buildid + ".zip")
-    with ZipFile(filename, 'a', compression=ZIP_DEFLATED) as sdk_archive:
+    with ZipFile(filename, "a", compression=ZIP_DEFLATED) as sdk_archive:
         print("Building SDK archive ZIP...")
         for project in args.project:
             print(f"Adding SDK project... ({project})")
-            project_buildroot = os.path.join(args.build_root,
-                                             "build-" + project)
+            project_buildroot = os.path.join(
+                args.build_root, "build-" + project
+            )
 
             project_sysroot_dir = os.path.join("sysroots", project, "usr")
             src = os.path.join(project_buildroot, "sdk", "sysroot", "usr")
@@ -218,12 +235,14 @@ def assemble_sdk(build_config, args):
             archive_dir(sdk_archive, src, project_makefile_dir)
 
             project_tools_dir = os.path.join("sysroots", project, "tools")
-            src = os.path.join(project_buildroot, "host_tools",
-                               "apploader_package_tool")
+            src = os.path.join(
+                project_buildroot, "host_tools", "apploader_package_tool"
+            )
             archive_file(sdk_archive, src, project_tools_dir, optional=True)
 
-            src = os.path.join(project_buildroot, "sdk", "tools",
-                               "manifest_compiler.py")
+            src = os.path.join(
+                project_buildroot, "sdk", "tools", "manifest_compiler.py"
+            )
             archive_file(sdk_archive, src, project_tools_dir)
 
             project_keys = build_config.signing_keys(project)
@@ -241,25 +260,36 @@ def assemble_sdk(build_config, args):
         archive_file(sdk_archive, SDK_README_PATH)
 
         # Add clang version info
-        envsetup = os.path.join(script_dir, 'envsetup.sh')
+        envsetup = os.path.join(script_dir, "envsetup.sh")
         cmd = f"source {envsetup} && echo $CLANG_BINDIR"
-        clang_bindir = subprocess.check_output(
-            cmd, shell=True, executable="/bin/bash").decode().strip()
+        clang_bindir = (
+            subprocess.check_output(cmd, shell=True, executable="/bin/bash")
+            .decode()
+            .strip()
+        )
         clang_dir = os.path.join(clang_bindir, "../")
 
         cmd = f"cd {clang_dir}; git rev-parse HEAD"
-        clang_prebuilt_commit = subprocess.check_output(
-            cmd, shell=True, executable="/bin/bash").decode().strip()
+        clang_prebuilt_commit = (
+            subprocess.check_output(cmd, shell=True, executable="/bin/bash")
+            .decode()
+            .strip()
+        )
 
-        archive_file(sdk_archive,
-                     os.path.join(clang_dir, "AndroidVersion.txt"),
-                     "clang-version")
-        archive_file(sdk_archive,
-                     os.path.join(clang_dir, "clang_source_info.md"),
-                     "clang-version")
+        archive_file(
+            sdk_archive,
+            os.path.join(clang_dir, "AndroidVersion.txt"),
+            "clang-version",
+        )
+        archive_file(
+            sdk_archive,
+            os.path.join(clang_dir, "clang_source_info.md"),
+            "clang-version",
+        )
         sdk_archive.writestr(
             os.path.join("clang-version", "PrebuiltCommitId.txt"),
-            clang_prebuilt_commit)
+            clang_prebuilt_commit,
+        )
 
         # Add trusty version info
         sdk_archive.writestr("Version.txt", args.buildid)
@@ -268,10 +298,13 @@ def assemble_sdk(build_config, args):
         if args.archive_toolchain:
             _head, clang_ver = os.path.split(os.path.realpath(clang_dir))
             print(f"Adding SDK toolchain... ({clang_ver})")
-            archive_dir(sdk_archive, clang_dir, os.path.join("toolchain",
-                                                             clang_ver))
-            archive_symlink(sdk_archive, os.path.join("toolchain", "clang"),
-                            clang_ver)
+            archive_dir(
+                sdk_archive, clang_dir, os.path.join("toolchain", clang_ver)
+            )
+            archive_symlink(
+                sdk_archive, os.path.join("toolchain", "clang"), clang_ver
+            )
+
 
 def build(args):
     """Call build system and copy build files to archive dir."""
@@ -285,10 +318,12 @@ def build(args):
     failed = []
 
     for project in args.project:
-        cmd = (f'export BUILDROOT={args.build_root};'
-               f'export BUILDID={args.buildid};'
-               f'nice $BUILDTOOLS_BINDIR/make {project} '
-               f'-f $LKROOT/makefile -j {args.jobs}')
+        cmd = (
+            f"export BUILDROOT={args.build_root};"
+            f"export BUILDID={args.buildid};"
+            f"nice $BUILDTOOLS_BINDIR/make {project} "
+            f"-f $LKROOT/makefile -j {args.jobs}"
+        )
         # Call envsetup.  If it fails, abort.
         envsetup = os.path.join(script_dir, "envsetup.sh")
         cmd = f"source {envsetup:s} && ({cmd:s})"
@@ -300,15 +335,20 @@ def build(args):
             # postprocess output with custom log processor
 
             # define additional env variable for make to generate log markers
-            cmd = f'export LOG_POSTPROCESSING=1; {cmd:s}'
+            cmd = f"export LOG_POSTPROCESSING=1; {cmd:s}"
 
-            with (open(project + '.log', 'wt', encoding="utf-8") as log_file,
-                  LogEngine(log_file) as log_engine):
-                status = subprocess.call(cmd, shell=True,
-                                         executable="/bin/bash",
-                                         stdout=log_engine.stdout,
-                                         stderr=log_engine.stderr)
-        else: # no output intercepting
+            with (
+                open(project + ".log", "wt", encoding="utf-8") as log_file,
+                LogEngine(log_file) as log_engine,
+            ):
+                status = subprocess.call(
+                    cmd,
+                    shell=True,
+                    executable="/bin/bash",
+                    stdout=log_engine.stdout,
+                    stderr=log_engine.stderr,
+                )
+        else:  # no output intercepting
             status = subprocess.call(cmd, shell=True, executable="/bin/bash")
 
         print("cmd: '" + cmd + "' returned", status)
@@ -338,8 +378,9 @@ def zip_dir(zip_archive, src, dest, filterfunc=lambda _: True):
             if not filterfunc(f):
                 continue
             file_path = os.path.join(root, f)
-            archive_dest = os.path.join(dest,
-                                        os.path.relpath(file_path, start=src))
+            archive_dest = os.path.join(
+                dest, os.path.relpath(file_path, start=src)
+            )
             zip_archive.write(file_path, archive_dest)
 
 
@@ -354,8 +395,9 @@ def zip_file(zip_archive, src_file, dest_dir=""):
        src_file: Source file to add to the archive.
        dest_dir: Relative destination path in the archive for this file.
     """
-    zip_archive.write(src_file,
-                      os.path.join(dest_dir, os.path.basename(src_file)))
+    zip_archive.write(
+        src_file, os.path.join(dest_dir, os.path.basename(src_file))
+    )
 
 
 def archive_symbols(args, project):
@@ -363,7 +405,7 @@ def archive_symbols(args, project):
     proj_buildroot = os.path.join(args.build_root, "build-" + project)
     filename = os.path.join(args.archive, f"{project}-{args.buildid}.syms.zip")
 
-    with ZipFile(filename, 'a', compression=ZIP_DEFLATED) as zip_archive:
+    with ZipFile(filename, "a", compression=ZIP_DEFLATED) as zip_archive:
         print("Archiving symbols in " + os.path.relpath(filename, args.archive))
 
         # archive the kernel elf file
@@ -374,8 +416,9 @@ def archive_symbols(args, project):
         zip_file(zip_archive, os.path.join(proj_buildroot, "lk.elf.sym.sorted"))
 
         # archive path/to/app.syms.elf for each trusted app
-        zip_dir(zip_archive, proj_buildroot, "",
-                lambda f: f.endswith("syms.elf"))
+        zip_dir(
+            zip_archive, proj_buildroot, "", lambda f: f.endswith("syms.elf")
+        )
 
 
 def create_uuid_map(args, project):
@@ -383,9 +426,9 @@ def create_uuid_map(args, project):
 
     def time_from_bytes(f, n: int) -> str:
         """Read n bytes from f as an int, and convert that int to a string."""
-        rtime = int.from_bytes(f.read(n), byteorder='little')
+        rtime = int.from_bytes(f.read(n), byteorder="little")
         width = 2 * n
-        return f'{rtime:0{width}x}'
+        return f"{rtime:0{width}x}"
 
     proj_buildroot = os.path.join(args.build_root, "build-" + project)
     uuidmapfile = os.path.join(args.archive, "uuid-map.txt")
@@ -397,21 +440,23 @@ def create_uuid_map(args, project):
         manifest_files = list(pathlib.Path(folder).glob("*.manifest"))
         if len(manifest_files) == 1:
             manifest = manifest_files[0]
-            with open(manifest, 'rb') as f:
+            with open(manifest, "rb") as f:
                 time_low = time_from_bytes(f, 4)
                 time_mid = time_from_bytes(f, 2)
                 time_hi_and_version = time_from_bytes(f, 2)
                 clock_seq_and_node = [time_from_bytes(f, 1) for _ in range(8)]
-                uuid_str = (f'{time_low}-{time_mid}-{time_hi_and_version}-'
-                            f'{clock_seq_and_node[0]}{clock_seq_and_node[1]}-'
-                            f'{clock_seq_and_node[2]}{clock_seq_and_node[3]}'
-                            f'{clock_seq_and_node[4]}{clock_seq_and_node[5]}'
-                            f'{clock_seq_and_node[6]}{clock_seq_and_node[7]}')
-            with open(uuidmapfile, 'a', encoding='utf-8') as f:
-                f.write(f'{uuid_str}, {file.relative_to(proj_buildroot)}\n')
+                uuid_str = (
+                    f"{time_low}-{time_mid}-{time_hi_and_version}-"
+                    f"{clock_seq_and_node[0]}{clock_seq_and_node[1]}-"
+                    f"{clock_seq_and_node[2]}{clock_seq_and_node[3]}"
+                    f"{clock_seq_and_node[4]}{clock_seq_and_node[5]}"
+                    f"{clock_seq_and_node[6]}{clock_seq_and_node[7]}"
+                )
+            with open(uuidmapfile, "a", encoding="utf-8") as f:
+                f.write(f"{uuid_str}, {file.relative_to(proj_buildroot)}\n")
 
     if os.path.exists(uuidmapfile):
-        with ZipFile(zipfile, 'a', compression=ZIP_DEFLATED) as zip_archive:
+        with ZipFile(zipfile, "a", compression=ZIP_DEFLATED) as zip_archive:
             zip_file(zip_archive, uuidmapfile)
         os.remove(uuidmapfile)
 
@@ -419,13 +464,14 @@ def create_uuid_map(args, project):
 def create_scripts_archive(args, project):
     """Create an archive for the scripts"""
     coverage_script = os.path.join(script_dir, "genReport.py")
-    scripts_zip = os.path.join(args.archive,
-                               f"{project}-{args.buildid}.scripts.zip")
+    scripts_zip = os.path.join(
+        args.archive, f"{project}-{args.buildid}.scripts.zip"
+    )
     if not os.path.exists(coverage_script):
         print("Coverage script does not exist!")
         return
 
-    with ZipFile(scripts_zip, 'a', compression=ZIP_DEFLATED) as zip_archive:
+    with ZipFile(scripts_zip, "a", compression=ZIP_DEFLATED) as zip_archive:
         zip_file(zip_archive, coverage_script)
 
 
@@ -439,15 +485,17 @@ def archive(build_config, args):
     for project in args.project:
         # config-driven archiving
         for item in build_config.dist:
-            archive_build_file(args, project, item.src, item.dest,
-                               optional=item.optional)
+            archive_build_file(
+                args, project, item.src, item.dest, optional=item.optional
+            )
 
         # copy out tos.img if it exists
         archive_build_file(args, project, "tos.img", optional=True)
 
         # copy out monitor if it exists
-        archive_build_file(args, project, "monitor/monitor.bin", "monitor.bin",
-                           optional=True)
+        archive_build_file(
+            args, project, "monitor/monitor.bin", "monitor.bin", optional=True
+        )
 
         # copy out trusty.padded if it exists
         archive_build_file(args, project, "trusty.padded", optional=True)
@@ -462,18 +510,25 @@ def archive(build_config, args):
         archive_build_file(args, project, "lk.bin")
 
         # copy out qemu package if it exists
-        archive_build_file(args, project, "trusty_qemu_package.zip",
-                           optional=True)
+        archive_build_file(
+            args, project, "trusty_qemu_package.zip", optional=True
+        )
 
         # copy out test package if it exists
-        archive_build_file(args, project, "trusty_test_package.zip",
-                           optional=True)
+        archive_build_file(
+            args, project, "trusty_test_package.zip", optional=True
+        )
 
         # export the app package tool for use in the SDK. This can go away once
         # all the SDK patches have landed, as the tool will be packaged in the
         # SDK zip.
-        archive_build_file(args, project, "host_tools/apploader_package_tool",
-                           "apploader_package_tool", optional=True)
+        archive_build_file(
+            args,
+            project,
+            "host_tools/apploader_package_tool",
+            "apploader_package_tool",
+            optional=True,
+        )
 
         # copy out symbol files for kernel and apps
         archive_symbols(args, project)
@@ -492,53 +547,84 @@ def get_build_deps(project_name, project, project_names, already_built):
     if project_name not in already_built:
         already_built.add(project_name)
         for dep_project_name, dep_project in project.also_build.items():
-            get_build_deps(dep_project_name, dep_project, project_names,
-                           already_built)
+            get_build_deps(
+                dep_project_name, dep_project, project_names, already_built
+            )
         project_names.append(project_name)
 
 
 def create_test_map(args, build_config, projects):
     for project_name in projects:
         test_map = {}
-        test_map["ports"] = []
-        port_names = set()
+        test_map["port_tests"] = []
+        test_map["commands"] = []
+        test_names = set()
         duplicates = set()
         project = build_config.get_project(project_name)
 
         if not project or not project.tests:
             return
 
-        project_type_prefix = "android-port-test:android-test:"
+        port_test_prefix = "android-port-test:"
+        project_type_prefix = re.compile("([^:]+:)+")
+
         for test in project.tests:
-            if not test.name.startswith(project_type_prefix):
-                continue
-            port_name = re.sub(project_type_prefix, "", test.name)
-            if port_name in port_names:
-                duplicates.add(port_name)
-                continue
-            port_names.add(port_name)
+            test_type = None
+            match test:
+                case TrustyCompositeTest() if any(
+                    s
+                    for s in test.sequence
+                    if s.name.startswith(port_test_prefix)
+                ):
+                    test_type = TrustyCompositeTest
+                case TrustyAndroidTest() if test.name.startswith(
+                    port_test_prefix
+                ):
+                    test_type = TrustyPortTest
+                case TrustyAndroidTest():
+                    test_type = TrustyAndroidTest
+                case _:
+                    pass
 
-            test_obj = { "port_name": port_name, "needs": [] }
+            if test_type:
+                test_obj = {"needs": []}
+                test_name = re.sub(project_type_prefix, "", test.name)
 
-            # TODO: this is duplicated in three places, extract into inner fn
-            if hasattr(test, 'need') and hasattr(test.need, 'flags'):
-                test_obj["needs"] = list(test.need.flags)
-            if hasattr(test, 'port_type'):
-                test_obj["type"] = str(test.port_type)
+                if test_name in test_names:
+                    duplicates.add(test_name)
+                    continue
+                test_names.add(test_name)
 
-            if isinstance(test, trusty_build_config.TrustyCompositeTest):
-                test_obj["sequence"] = []
+                if hasattr(test, "need") and hasattr(test.need, "flags"):
+                    test_obj["needs"] = list(test.need.flags)
+                if hasattr(test, "port_type"):
+                    test_obj["type"] = str(test.port_type)
 
-                for subtest in test.sequence:
-                    subtest_name = re.sub(project_type_prefix, "", subtest.name)
-                    test_obj["sequence"].append(subtest_name)
-                    if hasattr(subtest, 'need') and hasattr(subtest.need,
-                                                            'flags'):
-                        test_obj["needs"] += list(subtest.need.flags)
+                match test_type:
+                    case trusty_build_config.TrustyPortTest:
+                        test_obj["port_name"] = test_name
+                        test_map["port_tests"].append(test_obj)
+                    case trusty_build_config.TrustyAndroidTest:
+                        test_obj["command_name"] = test_name
+                        test_obj["command"] = test.command
+                        test_map["commands"].append(test_obj)
+                    case trusty_build_config.TrustyCompositeTest:
+                        test_obj["port_name"] = test_name
+                        test_obj["sequence"] = []
 
-                test_obj["needs"] = list(set(test_obj["needs"]))
+                        for subtest in test.sequence:
+                            subtest_name = re.sub(
+                                project_type_prefix, "", subtest.name
+                            )
+                            test_obj["sequence"].append(subtest_name)
+                            if hasattr(subtest, "need") and hasattr(
+                                subtest.need, "flags"
+                            ):
+                                test_obj["needs"] += list(subtest.need.flags)
 
-            test_map["ports"].append(test_obj)
+                            test_obj["needs"] += list(set(test_obj["needs"]))
+
+                        test_map["port_tests"].append(test_obj)
 
         if duplicates:
             print("ERROR: The following port tests are included multiple times")
@@ -546,27 +632,14 @@ def create_test_map(args, build_config, projects):
                 print(port)
             sys.exit(-1)
 
-        test_map["commands"] = []
-        for test in project.tests:
-            if not test.name.startswith("android-test:"):
-                continue
-            command_name = re.sub("android-test:", "", test.name)
-            command_obj = { "command_name": command_name, "needs": [] }
-
-            if hasattr(test, 'need') and hasattr(test.need, 'flags'):
-                command_obj["needs"] = list(test.need.flags)
-            if hasattr(test, 'port_type'):
-                command_obj["type"] = str(test.port_type)
-            command_obj["command"] = test.command
-
-            test_map["commands"].append(command_obj)
-
-        project_buildroot = os.path.join(args.build_root,
-                                         "build-" + project_name)
+        project_buildroot = os.path.join(
+            args.build_root, "build-" + project_name
+        )
         zip_path = os.path.join(project_buildroot, "trusty_test_package.zip")
-        with ZipFile(zip_path, 'a', compression=ZIP_DEFLATED) as zipf:
-            zipf.writestr(project_name + "-test-map.json",
-                          json.dumps(test_map, indent=4))
+        with ZipFile(zip_path, "a", compression=ZIP_DEFLATED) as zipf:
+            zipf.writestr(
+                project_name + "-test-map.json", json.dumps(test_map, indent=4)
+            )
 
 
 def main(default_config=None, emulator=True):
@@ -575,46 +648,95 @@ def main(default_config=None, emulator=True):
 
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("project", type=str, nargs="*", default=[".test.all"],
-                        help="Project to build and/or test.")
-    parser.add_argument("--build-root", type=str,
-                        default=os.path.join(top, "build-root"),
-                        help="Root of intermediate build directory.")
-    parser.add_argument("--archive", type=str, default=None,
-                        help="Location of build artifacts directory. If "
-                        "omitted, no artifacts will be produced.")
-    parser.add_argument("--archive-toolchain", action="store_true",
-                        help="Include the clang toolchain in the archive.")
+    parser.add_argument(
+        "project",
+        type=str,
+        nargs="*",
+        default=[".test.all"],
+        help="Project to build and/or test.",
+    )
+    parser.add_argument(
+        "--build-root",
+        type=str,
+        default=os.path.join(top, "build-root"),
+        help="Root of intermediate build directory.",
+    )
+    parser.add_argument(
+        "--archive",
+        type=str,
+        default=None,
+        help="Location of build artifacts directory. If "
+        "omitted, no artifacts will be produced.",
+    )
+    parser.add_argument(
+        "--archive-toolchain",
+        action="store_true",
+        help="Include the clang toolchain in the archive.",
+    )
     parser.add_argument("--buildid", type=str, help="Server build id")
-    parser.add_argument("--jobs", type=str, default=multiprocessing.cpu_count(),
-                        help="Max number of build jobs.")
-    parser.add_argument("--test", type=str, action="append",
-                        help="Manually specify test(s) to run. "
-                        "Only build projects that have test(s) enabled that "
-                        "matches a listed regex.")
-    parser.add_argument("--verbose", action="store_true",
-                        help="Verbose debug output from test(s).")
-    parser.add_argument("--debug-on-error", action="store_true",
-                        help="Wait for debugger connection if test fails.")
-    parser.add_argument("--clang", action="store_true", default=None,
-                        help="Build with clang.")
+    parser.add_argument(
+        "--jobs",
+        type=str,
+        default=multiprocessing.cpu_count(),
+        help="Max number of build jobs.",
+    )
+    parser.add_argument(
+        "--test",
+        type=str,
+        action="append",
+        help="Manually specify test(s) to run. "
+        "Only build projects that have test(s) enabled that "
+        "matches a listed regex.",
+    )
+    parser.add_argument(
+        "--verbose",
+        action="store_true",
+        help="Verbose debug output from test(s).",
+    )
+    parser.add_argument(
+        "--debug-on-error",
+        action="store_true",
+        help="Wait for debugger connection if test fails.",
+    )
+    parser.add_argument(
+        "--clang", action="store_true", default=None, help="Build with clang."
+    )
     parser.add_argument("--skip-build", action="store_true", help="Skip build.")
-    parser.add_argument("--skip-tests", action="store_true",
-                        help="Skip running tests.")
-    parser.add_argument("--run-disabled-tests", action="store_true",
-                        help="Also run disabled tests.")
-    parser.add_argument("--skip-project", action="append", default=[],
-                        help="Remove project from projects being built.")
-    parser.add_argument("--config", type=str, help="Path to an alternate "
-                        "build-config file.", default=default_config)
-    parser.add_argument("--android", type=str,
-                        help="Path to an Android build to run tests against.")
-    parser.add_argument("--color-log", action="store_true",
-                        help="Use colored build logs with pinned status lines.")
+    parser.add_argument(
+        "--skip-tests", action="store_true", help="Skip running tests."
+    )
+    parser.add_argument(
+        "--run-disabled-tests",
+        action="store_true",
+        help="Also run disabled tests.",
+    )
+    parser.add_argument(
+        "--skip-project",
+        action="append",
+        default=[],
+        help="Remove project from projects being built.",
+    )
+    parser.add_argument(
+        "--config",
+        type=str,
+        help="Path to an alternate " "build-config file.",
+        default=default_config,
+    )
+    parser.add_argument(
+        "--android",
+        type=str,
+        help="Path to an Android build to run tests against.",
+    )
+    parser.add_argument(
+        "--color-log",
+        action="store_true",
+        help="Use colored build logs with pinned status lines.",
+    )
     args = parser.parse_args()
 
-    build_config = trusty_build_config.TrustyBuildConfig(
-        config_file=args.config, android=args.android)
+    build_config = TrustyBuildConfig(
+        config_file=args.config, android=args.android
+    )
 
     projects = []
     for project in args.project:
@@ -638,22 +760,28 @@ def main(default_config=None, emulator=True):
 
     # If there's any test filters, ignore projects that don't have
     # any tests that match those filters.
-    test_filters = ([re.compile(test) for test in args.test]
-                    if args.test else None)
+    test_filters = (
+        [re.compile(test) for test in args.test] if args.test else None
+    )
     if test_filters:
         projects = run_tests.projects_to_test(
-            build_config, projects, test_filters,
-            run_disabled_tests=args.run_disabled_tests)
+            build_config,
+            projects,
+            test_filters,
+            run_disabled_tests=args.run_disabled_tests,
+        )
 
     # find build dependencies
     projects_old = projects
     projects = []
     built_projects = set()
     for project_name in projects_old:
-        get_build_deps(project_name,
-                       build_config.get_project(project_name),
-                       projects,
-                       built_projects)
+        get_build_deps(
+            project_name,
+            build_config.get_project(project_name),
+            projects,
+            built_projects,
+        )
     args.project = projects
 
     print("Projects", str(projects))
@@ -668,12 +796,15 @@ def main(default_config=None, emulator=True):
     # Run tests
     if not args.skip_tests:
         test_result = run_tests.test_projects(
-            build_config, args.build_root, projects,
+            build_config,
+            args.build_root,
+            projects,
             run_disabled_tests=args.run_disabled_tests,
             test_filters=test_filters,
             verbose=args.verbose,
             debug_on_error=args.debug_on_error,
-            emulator=emulator)
+            emulator=emulator,
+        )
 
         test_result.print_results()
         if test_result.failed_projects:
