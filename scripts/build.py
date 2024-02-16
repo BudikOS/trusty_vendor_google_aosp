@@ -475,21 +475,34 @@ def get_build_deps(project_name, project, project_names, already_built):
         project_names.append(project_name)
 
 def create_test_map(args, build_config, projects):
+    project_type_prefix = re.compile("([^:]+:)+")
     for project_name in projects:
         test_map = {}
         test_map["ports"] = []
         project = build_config.get_project(project_name)
-        if project and project.tests:
-            tests = filter(lambda t: (t.name.startswith("android-port-test:")), project.tests)
-            for test in tests:
-                test_obj = { "port_name": test.name.replace("android-port-test:android-test:",""),
-                             "needs": []}
-                if hasattr(test, 'need') and hasattr(test.need, 'flags'):
-                    test_obj["needs"] = list(test.need.flags)
-                if hasattr(test, 'port_type'):
-                    test_obj["type"] = str(test.port_type)
 
-                test_map["ports"].append(test_obj)
+        if not project or not project.tests:
+            return
+
+        for test in project.tests:
+            test_obj = { "port_name": re.sub(project_type_prefix, "", test.name),
+                         "needs": []}
+            if hasattr(test, 'need') and hasattr(test.need, 'flags'):
+                test_obj["needs"] = list(test.need.flags)
+            if hasattr(test, 'port_type'):
+                test_obj["type"] = str(test.port_type)
+
+            if isinstance(test, trusty_build_config.TrustyCompositeTest):
+                test_obj["sequence"] = []
+
+                for subtest in test.sequence:
+                    test_obj["sequence"].append(re.sub(project_type_prefix, "", subtest.name))
+                    if hasattr(subtest, 'need') and hasattr(subtest.need, 'flags'):
+                        test_obj["needs"] += list(subtest.need.flags)
+
+                test_obj["needs"] = list(set(test_obj["needs"]))
+
+            test_map["ports"].append(test_obj)
 
         project_buildroot = os.path.join(args.build_root, "build-" + project_name)
         zip_path = os.path.join(project_buildroot, "trusty_test_package.zip")
