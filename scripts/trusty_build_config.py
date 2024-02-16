@@ -24,16 +24,14 @@
 import argparse
 import os
 import re
-from enum import Enum
+from enum import StrEnum, auto
 from typing import List, Dict, Optional
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 
-class PORT_TYPE(Enum):
-    TEST = 1
-    BENCHMARK = 2
-    def __str__(self):
-        return str(self.name)
+class PortType(StrEnum):
+    TEST = auto(),
+    BENCHMARK = auto(),
 
 
 class TrustyBuildConfigProject(object):
@@ -88,16 +86,14 @@ class TrustyArchiveBuildFile(object):
 
 class TrustyTest(object):
     """Stores a pair of a test name and a command to run"""
-    def __init__(self, name, command, enabled, port_type = PORT_TYPE.TEST):
+    def __init__(self, name, command, enabled, port_type = PortType.TEST):
         self.name = name
         self.command = command
         self.enabled = enabled
         self.port_type = port_type
 
     def type(self, port_type):
-        if not isinstance(port_type, PORT_TYPE):
-            raise TypeError("Unexpected port_type: " + str(port_type))
-        self.port_type = port_type
+        self.port_type = PortType(port_type)  # ensure we have a valid port type
         return self
 
 class TrustyHostTest(TrustyTest):
@@ -118,7 +114,7 @@ class TrustyHostTest(TrustyTest):
 class TrustyAndroidTest(TrustyTest):
     """Stores a test name and command to run inside Android"""
 
-    def __init__(self, name, command, need = None, port_type = PORT_TYPE.TEST, enabled=True, nameprefix="", runargs=(),
+    def __init__(self, name, command, need = None, port_type = PortType.TEST, enabled=True, nameprefix="", runargs=(),
                  timeout=None):
         nameprefix = nameprefix + "android-test:"
         cmd = ["run", "--headless", "--shell-command", command]
@@ -134,7 +130,7 @@ class TrustyAndroidTest(TrustyTest):
 class TrustyPortTest(TrustyTest):
     """Stores a trusty port name for a test to run."""
 
-    def __init__(self, port, port_type=PORT_TYPE.TEST, enabled=True, timeout=None):
+    def __init__(self, port, port_type=PortType.TEST, enabled=True, timeout=None):
         super().__init__(port, None, enabled, port_type)
         self.port = port
         self.need = TrustyPortTestFlags()
@@ -367,8 +363,8 @@ class TrustyBuildConfig(object):
 
 
         file_format = {
-            "BENCHMARK": PORT_TYPE.BENCHMARK,
-            "TEST": PORT_TYPE.TEST,
+            "BENCHMARK": PortType.BENCHMARK,
+            "TEST": PortType.TEST,
             "include": include,
             "build": build,
             "builddep": builddep,
