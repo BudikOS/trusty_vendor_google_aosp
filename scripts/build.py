@@ -41,7 +41,6 @@ from trusty_build_config import (
     TrustyAndroidTest,
     TrustyBuildConfig,
     TrustyPortTest,
-    TrustyCommand,
     TrustyCompositeTest,
 )
 
