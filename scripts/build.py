@@ -313,6 +313,8 @@ def build(args):
         args.buildid = get_new_build_id(args.build_root)
     print("BuildID", args.buildid)
 
+    nice = "" if args.no_nice else "nice"
+
     # build projects
     failed = []
 
@@ -320,7 +322,7 @@ def build(args):
         cmd = (
             f"export BUILDROOT={args.build_root};"
             f"export BUILDID={args.buildid};"
-            f"nice $BUILDTOOLS_BINDIR/make {project} "
+            f"{nice} $BUILDTOOLS_BINDIR/make {project} "
             f"-f $LKROOT/makefile -j {args.jobs}"
         )
         # Call envsetup.  If it fails, abort.
@@ -730,6 +732,11 @@ def main(default_config=None, emulator=True):
         "--color-log",
         action="store_true",
         help="Use colored build logs with pinned status lines.",
+    )
+    parser.add_argument(
+        "--no-nice",
+        action="store_true",
+        help="Do not use nice to run the build.",
     )
     args = parser.parse_args()
 
