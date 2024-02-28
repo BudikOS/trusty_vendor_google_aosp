@@ -645,7 +645,6 @@ def create_test_map(args, build_config, projects):
 
 def main(default_config=None, emulator=True):
     top = os.path.abspath(os.path.join(script_dir, "../../../../.."))
-    os.chdir(top)
 
     parser = argparse.ArgumentParser()
 
@@ -658,7 +657,7 @@ def main(default_config=None, emulator=True):
     )
     parser.add_argument(
         "--build-root",
-        type=str,
+        type=os.path.abspath,
         default=os.path.join(top, "build-root"),
         help="Root of intermediate build directory.",
     )
@@ -739,6 +738,13 @@ def main(default_config=None, emulator=True):
         help="Do not use nice to run the build.",
     )
     args = parser.parse_args()
+
+    # Change the current directory to the Trusty root
+    # We do this after parsing all the arguments because
+    # some of the paths, e.g., build-root, might be relative
+    # to the directory that the script was called from, not
+    # to the Trusty root directory
+    os.chdir(top)
 
     build_config = TrustyBuildConfig(
         config_file=args.config, android=args.android
