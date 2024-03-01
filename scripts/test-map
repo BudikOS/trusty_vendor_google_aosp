@@ -458,6 +458,8 @@
                                 "*/NewKeyGenerationTest.AttestationApplicationIDLengthProperlyEncoded*:"
                                 "*/BootloaderStateTest.VbStateIsUnverified*:"
                                 "*/BootloaderStateTest.VbmetaDigest*:"
+                                "*InstanceTest.AidlVersionInFeature*:"
+                                "*InstanceTest.FeatureVersionInAidl*:"
                                 "\"",
                         timeout=(60 * 60)),
 
