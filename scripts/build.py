@@ -509,7 +509,7 @@ def create_test_map(args, build_config, projects):
         with ZipFile(zip_path, 'a', compression=ZIP_DEFLATED) as zipf:
             zipf.writestr(project_name + "-test-map.json", json.dumps(test_map, indent=4))
 
-def main(default_config=None):
+def main(default_config=None, emulator=True):
     top = os.path.abspath(os.path.join(script_dir, "../../../../.."))
     os.chdir(top)
 
@@ -610,7 +610,8 @@ def main(default_config=None):
             run_disabled_tests=args.run_disabled_tests,
             test_filters=test_filters,
             verbose=args.verbose,
-            debug_on_error=args.debug_on_error)
+            debug_on_error=args.debug_on_error,
+            emulator=emulator)
 
         test_result.print_results()
         if test_result.failed_projects:
