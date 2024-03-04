@@ -38,7 +38,7 @@ from enum import Enum
 from typing import Optional
 from collections import namedtuple
 
-from trusty_build_config import TrustyTest, TrustyCompositeTest
+from trusty_build_config import PORT_TYPE, TrustyTest, TrustyCompositeTest
 from trusty_build_config import TrustyRebootCommand, TrustyHostTest
 from trusty_build_config import TrustyAndroidTest, TrustyBuildConfig
 
@@ -333,23 +333,28 @@ def run_tests(
                         break
 
             case TrustyTest():
-                if isinstance(test, TrustyAndroidTest):
-                    print_test_command(test.name, [test.shell_command])
-                else:
-                    # port tests are identified by their port name, no command
-                    print_test_command(test.name)
-
-                if not test_env:
-                    test_env = load_test_environment()
-                if test_env:
-                    if not test_runner:
-                        test_runner = test_env.init(android=build_config.android,
-                                                    disable_rpmb=disable_rpmb,
-                                                    verbose=verbose,
-                                                    debug_on_error=debug_on_error)
-                    status = test_env.run_test(test_runner, cmd)
-                else:
+                # Benchmark runs on QEMU are meaningless and take a lot of CI time
+                # One can still run the bootport test manually if desired
+                if test.port_type == PORT_TYPE.BENCHMARK:
                     ignore_tests = True
+                else:
+                    if isinstance(test, TrustyAndroidTest):
+                        print_test_command(test.name, [test.shell_command])
+                    else:
+                        # port tests are identified by their port name, no command
+                        print_test_command(test.name)
+
+                    if not test_env:
+                        test_env = load_test_environment()
+                    if test_env:
+                        if not test_runner:
+                            test_runner = test_env.init(android=build_config.android,
+                                                        disable_rpmb=disable_rpmb,
+                                                        verbose=verbose,
+                                                        debug_on_error=debug_on_error)
+                        status = test_env.run_test(test_runner, cmd)
+                    else:
+                        ignore_tests = True
             case TrustyRebootCommand() if parent_test:
                 assert isinstance(parent_test, TrustyCompositeTest)
                 if test_env:
