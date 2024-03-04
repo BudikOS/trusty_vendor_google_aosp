@@ -263,16 +263,23 @@ def run_tests(
 
     def load_test_environment():
         sys.path.append(project_root)
-        if run := sys.modules.get("run"):
-            if not run.__file__.startswith(project_root):
-                # run module was imported for another project and needs to be
-                # replaced with the one for the current project.
-                run = importlib.reload(run)
-        else:
-            # first import in this interpreter instance, we use importlib rather
-            # than a regular import statement since it avoids linter warnings.
-            run = importlib.import_module("run")
-        sys.path.pop()
+        try:
+            if run := sys.modules.get("run"):
+                if not run.__file__.startswith(project_root):
+                    # run module was imported for another project and needs to be
+                    # replaced with the one for the current project.
+                    run = importlib.reload(run)
+            else:
+                # first import in this interpreter instance, we use importlib rather
+                # than a regular import statement since it avoids linter warnings.
+                run = importlib.import_module("run")
+            sys.path.pop()
+        except ImportError:
+            print('No Run Module for target/config')
+            return None
+        except ModuleNotFoundError:
+            print('No Run Module for target/config')
+            return None
 
         return run
 
@@ -292,6 +299,7 @@ def run_tests(
         disable_rpmb = True if "--disable_rpmb" in cmd else None
 
         test_start_time = time.time()
+        ignore_tests = False
 
         match test:
             case TrustyHostTest():
@@ -316,12 +324,15 @@ def run_tests(
 
                 if not test_env:
                     test_env = load_test_environment()
-                if not test_runner:
-                    test_runner = test_env.init(android=build_config.android,
-                                                disable_rpmb=disable_rpmb,
-                                                verbose=verbose,
-                                                debug_on_error=debug_on_error)
-                status = test_env.run_test(test_runner, cmd)
+                if test_env:
+                    if not test_runner:
+                        test_runner = test_env.init(android=build_config.android,
+                                                    disable_rpmb=disable_rpmb,
+                                                    verbose=verbose,
+                                                    debug_on_error=debug_on_error)
+                    status = test_env.run_test(test_runner, cmd)
+                else:
+                    ignore_tests = True
             case TrustyRebootCommand() if parent_test:
                 assert isinstance(parent_test, TrustyCompositeTest)
                 if test_env:
@@ -337,21 +348,24 @@ def run_tests(
             case _:
                 raise NotImplementedError(f"Don't know how to run {test.name}")
 
-        elapsed = time.time() - test_start_time
-        print(f"{test.name:s} returned {status:d} after {elapsed:.3f} seconds")
+        if not ignore_tests:
+            elapsed = time.time() - test_start_time
+            print(f"{test.name:s} returned {status:d} after {elapsed:.3f} seconds")
 
-        if status and retry and test_results.retried_count < MAX_RETRIES:
-            print(f"retrying potentially flaky test {test.name} on",
-                  test_results.project)
-            # TODO: first retry the test without restarting the test environment
-            #       and if that fails, restart and then retry if < MAX_RETRIES.
-            if test_env:
-                test_env.shutdown(test_runner)
-                test_runner = None
-            status = run_test(test, parent_test, retry=False)
+            if status and retry and test_results.retried_count < MAX_RETRIES:
+                print(f"retrying potentially flaky test {test.name} on",
+                    test_results.project)
+                # TODO: first retry the test without restarting the test environment
+                #       and if that fails, restart and then retry if < MAX_RETRIES.
+                if test_env:
+                    test_env.shutdown(test_runner)
+                    test_runner = None
+                status = run_test(test, parent_test, retry=False)
+            else:
+                test_results.add_result(test.name, status == 0, not retry)
+            return status
         else:
-            test_results.add_result(test.name, status == 0, not retry)
-        return status
+            return 0 # success
 
     # the retry mechanism is intended to allow a batch run of all tests to pass
     # even if a small handful of tests exhibit flaky behavior. If a test filter
