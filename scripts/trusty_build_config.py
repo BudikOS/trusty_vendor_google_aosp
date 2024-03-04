@@ -105,7 +105,7 @@ class TrustyHostTest(TrustyTest):
 class TrustyAndroidTest(TrustyTest):
     """Stores a test name and command to run inside Android"""
 
-    def __init__(self, name, command, enabled=True, nameprefix="", runargs=(),
+    def __init__(self, name, command, need = None, enabled=True, nameprefix="", runargs=(),
                  timeout=None):
         nameprefix = nameprefix + "android-test:"
         cmd = ["run", "--headless", "--shell-command", command]
@@ -115,6 +115,7 @@ class TrustyAndroidTest(TrustyTest):
             cmd += list(runargs)
         super().__init__(nameprefix + name, cmd, enabled)
         self.shell_command = command
+        self.need = need
 
 
 class TrustyPortTest(TrustyTest):
@@ -133,7 +134,7 @@ class TrustyPortTest(TrustyTest):
     def into_androidporttest(self, cmdargs, **kwargs):
         cmdargs = list(cmdargs)
         cmd = " ".join(["/vendor/bin/trusty-ut-ctrl", self.port] + cmdargs)
-        return TrustyAndroidTest(self.name, cmd, self.enabled,
+        return TrustyAndroidTest(self.name, cmd, self.need, self.enabled,
                                  timeout=self.timeout, **kwargs)
 
     def into_bootporttest(self) -> TrustyTest:
