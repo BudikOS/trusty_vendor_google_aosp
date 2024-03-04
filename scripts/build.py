@@ -519,11 +519,25 @@ def create_test_map(args, build_config, projects):
                 print(port)
             sys.exit(-1)
 
+        test_map["commands"] = []
+        commands_list = filter(lambda t: t.name.startswith("android-test:"), project.tests)
+        for command in commands_list:
+            command_name = re.sub("android-test:", "", command.name)
+            command_obj = { "command_name": command_name,
+            "needs": []}
+
+            if hasattr(command, 'need') and hasattr(command.need, 'flags'):
+                command_obj["needs"] = list(command.need.flags)
+            if hasattr(command, 'port_type'):
+                command_obj["type"] = str(command.port_type)
+            command_obj["command"] = command.command
+
+            test_map["commands"].append(command_obj)
+
         project_buildroot = os.path.join(args.build_root, "build-" + project_name)
         zip_path = os.path.join(project_buildroot, "trusty_test_package.zip")
         with ZipFile(zip_path, 'a', compression=ZIP_DEFLATED) as zipf:
             zipf.writestr(project_name + "-test-map.json", json.dumps(test_map, indent=4))
-
 
 def main(default_config=None, emulator=True):
     top = os.path.abspath(os.path.join(script_dir, "../../../../.."))
