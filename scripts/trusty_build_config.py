@@ -345,7 +345,8 @@ class TrustyBuildConfig(object):
                 provides = TrustyPortTestFlags(android=True,
                                                storage_boot=True,
                                                storage_full=True,
-                                               smp4=True)
+                                               smp4=True,
+                                               abl=True)
 
             return [test.into_androidporttest(nameprefix=nameprefix,
                                               cmdargs=cmdargs,
