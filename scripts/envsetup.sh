@@ -43,6 +43,15 @@ export BUILDTOOLS_BINDIR=${TRUSTY_TOP}/prebuilts/build-tools/linux-x86/bin
 export BUILDTOOLS_COMMON=${TRUSTY_TOP}/prebuilts/build-tools/common
 export PY3=$BUILDTOOLS_BINDIR/py3-cmd
 
+if [ -f "$TRUSTY_TOP/external/lk/engine.mk" ]; then
+    export LKROOT=$TRUSTY_TOP/external/lk
+elif [ -f "$TRUSTY_TOP/external/trusty/lk/engine.mk" ]; then
+    export LKROOT=$TRUSTY_TOP/external/trusty/lk
+else
+    echo "Error: Couldn't locate the LK root directory." 1>&2
+    exit 1
+fi
+
 # Additional Python libraries:
 # Most Trusty Python scripts source this file to find the hermetic
 # Python interpreter ($PY3).
