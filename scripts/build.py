@@ -29,9 +29,10 @@ import os
 import pathlib
 import re
 import shutil
+import stat
 import subprocess
 import sys
-from zipfile import ZipFile, ZIP_DEFLATED
+from zipfile import ZipFile, ZipInfo, ZIP_DEFLATED
 
 import run_tests
 import trusty_build_config
@@ -43,6 +44,8 @@ TRUSTED_APP_MAKEFILE_PATH = "trusty/user/base/make/trusted_app.mk"
 TRUSTED_LOADABLE_APP_MAKEFILE_PATH = "trusty/kernel/make/loadable_app.mk"
 GEN_MANIFEST_MAKEFILE_PATH = "trusty/user/base/make/gen_manifest.mk"
 
+ZIP_CREATE_SYSTEM_UNIX = 3
+SYMLINK_MODE = stat.S_IFLNK | stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO
 
 def get_new_build_id(build_root):
     """Increment build-id file and return new build-id number."""
@@ -115,6 +118,19 @@ def archive_build_file(args, project, src, dest=None, optional=False):
     copy_file(src, dest, optional=optional)
 
 
+def archive_symlink(zip_archive, arcname, target):
+    """Add a symbolic link to the archive
+
+    Args:
+       zip_archive: Archive to update
+       arcname: Filename in the archive to be added
+       target: Symbolic link target
+    """
+    zinfo = ZipInfo(arcname)
+    zinfo.create_system = ZIP_CREATE_SYSTEM_UNIX
+    zinfo.external_attr = SYMLINK_MODE << 16
+    zip_archive.writestr(zinfo, target)
+
 def is_child_of_any(path, possible_parents):
     for possible_parent in possible_parents:
         if path.startswith(possible_parent):
@@ -135,16 +151,29 @@ def archive_dir(zip_archive, src, dest, omit=()):
        omit: List of directorys to omit from the archive. Specified as relative
            paths from `src`.
     """
-    for root, _dirs, files in os.walk(src):
+    for root, dirs, files in os.walk(src):
         rel_root = os.path.relpath(root, start=src)
         if is_child_of_any(rel_root, omit):
             continue
+
+        for d in dirs:
+            dir_path = os.path.join(root, d)
+
+            if os.path.islink(dir_path):
+                archive_dest = os.path.join(dest, os.path.relpath(dir_path,
+                                                                  start=src))
+                archive_symlink(zip_archive, archive_dest,
+                                os.readlink(dir_path))
 
         for f in files:
             file_path = os.path.join(root, f)
             archive_dest = os.path.join(dest, os.path.relpath(file_path,
                                                               start=src))
-            zip_archive.write(file_path, archive_dest)
+            if os.path.islink(file_path):
+                archive_symlink(zip_archive, archive_dest,
+                                os.readlink(file_path))
+            else:
+                zip_archive.write(file_path, archive_dest)
 
 def archive_file(zip_archive, src_file, dest_dir="", optional=False):
     """Add a file to a ZIP file.
@@ -171,6 +200,7 @@ def assemble_sdk(build_config, args):
     with ZipFile(filename, 'a', compression=ZIP_DEFLATED) as sdk_archive:
         print("Building SDK archive ZIP...")
         for project in args.project:
+            print(f"Adding SDK project... ({project})")
             project_buildroot = os.path.join(args.build_root,
                                              "build-" + project)
 
@@ -198,6 +228,8 @@ def assemble_sdk(build_config, args):
             for filename in project_keys:
                 archive_file(sdk_archive, filename, project_tools_dir)
 
+        print("Adding SDK sundries...")
+
         # Copy the app makefile
         archive_file(sdk_archive, TRUSTED_APP_MAKEFILE_PATH, "make")
         archive_file(sdk_archive, TRUSTED_LOADABLE_APP_MAKEFILE_PATH, "make")
@@ -218,16 +250,26 @@ def assemble_sdk(build_config, args):
             cmd, shell=True, executable="/bin/bash").decode().strip()
 
         archive_file(sdk_archive,
-                     os.path.join(clang_dir, "AndroidVersion.txt"), "clang")
+                     os.path.join(clang_dir, "AndroidVersion.txt"),
+                     "clang-version")
         archive_file(sdk_archive,
-                     os.path.join(clang_dir, "clang_source_info.md"), "clang")
+                     os.path.join(clang_dir, "clang_source_info.md"),
+                     "clang-version")
         sdk_archive.writestr(
-            os.path.join("clang", "PrebuiltCommitId.txt"),
+            os.path.join("clang-version", "PrebuiltCommitId.txt"),
             clang_prebuilt_commit)
 
         # Add trusty version info
         sdk_archive.writestr("Version.txt", args.buildid)
 
+        # Add the toolchain if requested
+        if args.archive_toolchain:
+            _head, clang_ver = os.path.split(os.path.realpath(clang_dir))
+            print(f"Adding SDK toolchain... ({clang_ver})")
+            archive_dir(sdk_archive, clang_dir, os.path.join("toolchain",
+                                                             clang_ver))
+            archive_symlink(sdk_archive, os.path.join("toolchain", "clang"),
+                            clang_ver)
 
 def build(args):
     """Call build system and copy build files to archive dir."""
@@ -446,6 +488,8 @@ def main(default_config=None):
     parser.add_argument("--archive", type=str, default=None,
                         help="Location of build artifacts directory. If "
                         "omitted, no artifacts will be produced.")
+    parser.add_argument("--archive-toolchain", action="store_true",
+                        help="Include the clang toolchain in the archive.")
     parser.add_argument("--buildid", type=str, help="Server build id")
     parser.add_argument("--jobs", type=str, default=multiprocessing.cpu_count(),
                         help="Max number of build jobs.")
