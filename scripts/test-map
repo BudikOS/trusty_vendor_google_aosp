@@ -455,7 +455,9 @@
                                 "*/NewKeyGenerationTest.EcdsaAttestationIdTags*:"
                                 "*/NewKeyGenerationTest.EcdsaAttestationUniqueId*:"
                                 "*/NewKeyGenerationTest.EcdsaAttestationTagNoApplicationId*:"
-                                "*/NewKeyGenerationTest.AttestationApplicationIDLengthProperlyEncoded*"
+                                "*/NewKeyGenerationTest.AttestationApplicationIDLengthProperlyEncoded*:"
+                                "*/BootloaderStateTest.VbStateIsUnverified*:"
+                                "*/BootloaderStateTest.VbmetaDigest*:"
                                 "\"",
                         timeout=(60 * 60)),
 
