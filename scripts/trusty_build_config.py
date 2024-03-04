@@ -24,9 +24,16 @@
 import argparse
 import os
 import re
+from enum import Enum
 from typing import List, Dict, Optional
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
+
+class PORT_TYPE(Enum):
+    TEST = 1
+    BENCHMARK = 2
+    def __str__(self):
+        return str(self.name)
 
 
 class TrustyBuildConfigProject(object):
@@ -81,11 +88,17 @@ class TrustyArchiveBuildFile(object):
 
 class TrustyTest(object):
     """Stores a pair of a test name and a command to run"""
-    def __init__(self, name, command, enabled):
+    def __init__(self, name, command, enabled, port_type = PORT_TYPE.TEST):
         self.name = name
         self.command = command
         self.enabled = enabled
+        self.port_type = port_type
 
+    def type(self, port_type):
+        if not isinstance(port_type, PORT_TYPE):
+            raise TypeError("Unexpected port_type: " + str(port_type))
+        self.port_type = port_type
+        return self
 
 class TrustyHostTest(TrustyTest):
     """Stores a pair of a test name and a command to run on host."""
@@ -105,7 +118,7 @@ class TrustyHostTest(TrustyTest):
 class TrustyAndroidTest(TrustyTest):
     """Stores a test name and command to run inside Android"""
 
-    def __init__(self, name, command, need = None, enabled=True, nameprefix="", runargs=(),
+    def __init__(self, name, command, need = None, port_type = PORT_TYPE.TEST, enabled=True, nameprefix="", runargs=(),
                  timeout=None):
         nameprefix = nameprefix + "android-test:"
         cmd = ["run", "--headless", "--shell-command", command]
@@ -113,7 +126,7 @@ class TrustyAndroidTest(TrustyTest):
             cmd += ['--timeout', str(timeout)]
         if runargs:
             cmd += list(runargs)
-        super().__init__(nameprefix + name, cmd, enabled)
+        super().__init__(nameprefix + name, cmd, enabled, port_type)
         self.shell_command = command
         self.need = need
 
@@ -121,8 +134,8 @@ class TrustyAndroidTest(TrustyTest):
 class TrustyPortTest(TrustyTest):
     """Stores a trusty port name for a test to run."""
 
-    def __init__(self, port, enabled=True, timeout=None):
-        super().__init__(port, None, enabled)
+    def __init__(self, port, port_type=PORT_TYPE.TEST, enabled=True, timeout=None):
+        super().__init__(port, None, enabled, port_type)
         self.port = port
         self.need = TrustyPortTestFlags()
         self.timeout = timeout
@@ -134,13 +147,13 @@ class TrustyPortTest(TrustyTest):
     def into_androidporttest(self, cmdargs, **kwargs):
         cmdargs = list(cmdargs)
         cmd = " ".join(["/vendor/bin/trusty-ut-ctrl", self.port] + cmdargs)
-        return TrustyAndroidTest(self.name, cmd, self.need, self.enabled,
+        return TrustyAndroidTest(self.name, cmd, self.need, self.port_type, self.enabled,
                                  timeout=self.timeout, **kwargs)
 
     def into_bootporttest(self) -> TrustyTest:
         cmd = ["run", "--headless", "--boot-test", self.port]
         cmd += ['--timeout', str(self.timeout)] if self.timeout else []
-        return TrustyTest("boot-test:" + self.port, cmd, self.enabled)
+        return TrustyTest("boot-test:" + self.port, cmd, self.enabled, self.port_type)
 
 
 class TrustyCommand:
@@ -354,6 +367,8 @@ class TrustyBuildConfig(object):
 
 
         file_format = {
+            "BENCHMARK": PORT_TYPE.BENCHMARK,
+            "TEST": PORT_TYPE.TEST,
             "include": include,
             "build": build,
             "builddep": builddep,
