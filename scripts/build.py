@@ -497,7 +497,7 @@ def get_build_deps(project_name, project, project_names, already_built):
 def create_test_map(args, build_config, projects):
     for project_name in projects:
         test_map = {}
-        test_map["ports"] = []
+        test_map["ports"] = []  # TODO: should probably be called port_tests
         port_names = set()
         duplicates = set()
         project = build_config.get_project(project_name)
@@ -505,59 +505,72 @@ def create_test_map(args, build_config, projects):
         if not project or not project.tests:
             return
 
-        tests_list = filter(lambda t: t.name.startswith("android-port-test:android-test:"),project.tests)
-        for test in tests_list:
-            port_name = re.sub("android-port-test:android-test:", "", test.name)
+        project_type_prefix = "android-port-test:android-test:"
+        for test in project.tests:
+            if not test.name.startswith(project_type_prefix):
+                continue
+            port_name = test.name.replace(project_type_prefix, "")
             if port_name in port_names:
                 duplicates.add(port_name)
                 continue
             port_names.add(port_name)
 
-            test_obj = { "port_name": port_name,
-                         "needs": []}
+            test_obj = { "port_name": port_name, "needs": [] }
 
+            # TODO: this is duplicated in three places, extract into inner fn
             if hasattr(test, 'need') and hasattr(test.need, 'flags'):
                 test_obj["needs"] = list(test.need.flags)
             if hasattr(test, 'port_type'):
                 test_obj["type"] = str(test.port_type)
 
+            # BUG:  this branch is never taken because composite tests don't
+            #       start with `project_type_prefix` so the loop continues
+            #       without ever processing composite tests. This means that
+            #       tests in the sequence are not present in the output JSON.
             if isinstance(test, trusty_build_config.TrustyCompositeTest):
                 test_obj["sequence"] = []
 
                 for subtest in test.sequence:
-                    test_obj["sequence"].append(re.sub(project_type_prefix, "", subtest.name))
-                    if hasattr(subtest, 'need') and hasattr(subtest.need, 'flags'):
+                    # TODO: verify that project_type_prefix is defined correctly
+                    # TODO: shouldn't this be called test_type_prefix?
+                    #       (android, boot, host are the test types...)
+                    subtest_name = subtest.name.replace(project_type_prefix, "")
+                    test_obj["sequence"].append(subtest_name)
+                    if hasattr(subtest, 'need') and hasattr(subtest.need,
+                                                            'flags'):
                         test_obj["needs"] += list(subtest.need.flags)
 
                 test_obj["needs"] = list(set(test_obj["needs"]))
 
             test_map["ports"].append(test_obj)
 
-        if len(duplicates) > 0:
-            print("ERROR: The following ports have been included multipe times")
+        if duplicates:
+            print("ERROR: The following port tests are included multiple times")
             for port in duplicates:
                 print(port)
             sys.exit(-1)
 
         test_map["commands"] = []
-        commands_list = filter(lambda t: t.name.startswith("android-test:"), project.tests)
-        for command in commands_list:
-            command_name = re.sub("android-test:", "", command.name)
-            command_obj = { "command_name": command_name,
-            "needs": []}
+        for test in project.tests:
+            if not test.name.startswith("android-test:"):
+                continue
+            command_name = test.name.replace("android-test:", "")
+            command_obj = { "command_name": command_name, "needs": [] }
 
-            if hasattr(command, 'need') and hasattr(command.need, 'flags'):
-                command_obj["needs"] = list(command.need.flags)
-            if hasattr(command, 'port_type'):
-                command_obj["type"] = str(command.port_type)
-            command_obj["command"] = command.command
+            if hasattr(test, 'need') and hasattr(test.need, 'flags'):
+                command_obj["needs"] = list(test.need.flags)
+            if hasattr(test, 'port_type'):
+                command_obj["type"] = str(test.port_type)
+            command_obj["command"] = test.command
 
             test_map["commands"].append(command_obj)
 
-        project_buildroot = os.path.join(args.build_root, "build-" + project_name)
+        project_buildroot = os.path.join(args.build_root,
+                                         "build-" + project_name)
         zip_path = os.path.join(project_buildroot, "trusty_test_package.zip")
         with ZipFile(zip_path, 'a', compression=ZIP_DEFLATED) as zipf:
-            zipf.writestr(project_name + "-test-map.json", json.dumps(test_map, indent=4))
+            zipf.writestr(project_name + "-test-map.json",
+                          json.dumps(test_map, indent=4))
 
 def main(default_config=None, emulator=True):
     top = os.path.abspath(os.path.join(script_dir, "../../../../.."))
