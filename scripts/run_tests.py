@@ -20,6 +20,7 @@
 # and expects the following environment variables:
 #
 """:" # Shell script (in docstring to appease pylint)
+
 # Find and invoke hermetic python3 interpreter
 . "`dirname $0`/envsetup.sh"; exec "$PY3" "$0" "$@"
 # Shell script end
@@ -27,25 +28,26 @@ Run tests for a project.
 """
 
 import argparse
+from collections import namedtuple
+from enum import Enum
 import importlib
 import os
 import re
 import subprocess
 import sys
 import time
-
-from enum import Enum
 from typing import Optional
-from collections import namedtuple
 
-from trusty_build_config import PortType, TrustyTest, TrustyCompositeTest
-from trusty_build_config import TrustyRebootCommand, TrustyHostTest
+from trusty_build_config import PortType, TrustyCompositeTest, TrustyTest
 from trusty_build_config import TrustyAndroidTest, TrustyBuildConfig
+from trusty_build_config import TrustyHostTest, TrustyRebootCommand
 
 
 TestResult = namedtuple("TestResult", "test status retried")
 
-TEST_STATUS = Enum('TEST_STATUS', ['PASSED', 'FAILED', 'SKIPPED'])
+TEST_STATUS = Enum("TEST_STATUS", ["PASSED", "FAILED", "SKIPPED"])
+
+
 class TestResults(object):
     """Stores test results.
 
@@ -70,7 +72,9 @@ class TestResults(object):
         self.retried_count = 0
         self.test_results = []
 
-    def add_result(self, test: str, cur_test_status: TEST_STATUS, retried: bool):
+    def add_result(
+        self, test: str, cur_test_status: TEST_STATUS, retried: bool
+    ):
         """Add a test result."""
         self.test_results.append(TestResult(test, cur_test_status, retried))
         if cur_test_status == TEST_STATUS.PASSED:
@@ -97,9 +101,11 @@ class TestResults(object):
             out = sys.stdout
         test_count = self.passed_count + self.failed_count + self.skipped_count
         test_attempted = self.passed_count + self.failed_count
-        out.write("\n"
-                  f"There were {test_count} defined for project {self.project}.\n"
-                  f"{test_attempted} ran and {self.skipped_count} were skipped.")
+        out.write(
+            "\n"
+            f"There were {test_count} defined for project {self.project}.\n"
+            f"{test_attempted} ran and {self.skipped_count} were skipped."
+        )
         if test_count:
             for result in self.test_results:
                 match (result.status, result.retried, print_failed_only):
@@ -110,11 +116,15 @@ class TestResults(object):
                     case (TEST_STATUS.PASSED, retried, False):
                         out.write(f"[       OK ] {result.test}\n")
                         if retried:
-                            out.write(f"WARNING: {result.test} was re-run and "
-                                      "passed on second try; it may be flaky\n")
+                            out.write(
+                                f"WARNING: {result.test} was re-run and "
+                                "passed on second try; it may be flaky\n"
+                            )
 
-            out.write(f"[==========] {test_count} tests ran for project "
-                      f"{self.project}.\n")
+            out.write(
+                f"[==========] {test_count} tests ran for project "
+                f"{self.project}.\n"
+            )
             if self.passed_count and not print_failed_only:
                 out.write(f"[  PASSED  ] {self.passed_count} tests.\n")
             if self.failed_count:
@@ -122,14 +132,18 @@ class TestResults(object):
             if self.skipped_count:
                 out.write(f"[  SKIPPED ] {self.skipped_count} tests.\n")
             if self.flaked_count > 0:
-                out.write(f"WARNING: {self.flaked_count} tests passed when "
-                          "re-run which indicates that they may be flaky.\n")
+                out.write(
+                    f"WARNING: {self.flaked_count} tests passed when "
+                    "re-run which indicates that they may be flaky.\n"
+                )
             if self.retried_count == MAX_RETRIES:
-                out.write(f"WARNING: hit MAX_RETRIES({MAX_RETRIES}) during "
-                          "testing after which point, no tests were retried.\n")
+                out.write(
+                    f"WARNING: hit MAX_RETRIES({MAX_RETRIES}) during "
+                    "testing after which point, no tests were retried.\n"
+                )
 
 
-class MultiProjectTestResults():
+class MultiProjectTestResults:
     """Stores results from testing multiple projects.
 
     Attributes:
@@ -140,6 +154,7 @@ class MultiProjectTestResults():
         had_passes: Count of all projects with any test passes.
         had_failures: Count of all projects with any test failures.
     """
+
     def __init__(self, test_results: list[TestResults]):
         self.test_results = test_results
         self.failed_projects = []
@@ -170,15 +185,21 @@ class MultiProjectTestResults():
 
         sys.stdout.write("\n")
         if self.had_passes:
-            sys.stdout.write(f"[  PASSED  ] {self.tests_passed} tests in "
-                             f"{self.had_passes} projects.\n")
+            sys.stdout.write(
+                f"[  PASSED  ] {self.tests_passed} tests in "
+                f"{self.had_passes} projects.\n"
+            )
         if self.had_failures:
-            sys.stdout.write(f"[  FAILED  ] {self.tests_failed} tests in "
-                             f"{self.had_failures} projects.\n")
+            sys.stdout.write(
+                f"[  FAILED  ] {self.tests_failed} tests in "
+                f"{self.had_failures} projects.\n"
+            )
             sys.stdout.flush()
         if self.had_skip:
-            sys.stdout.write(f"[  SKIPPED ] {self.tests_skipped} tests in "
-                             f"{self.had_skip} projects.\n")
+            sys.stdout.write(
+                f"[  SKIPPED ] {self.tests_skipped} tests in "
+                f"{self.had_skip} projects.\n"
+            )
             sys.stdout.flush()
 
             # Print the failed tests again to stderr as the build server will
@@ -189,8 +210,10 @@ class MultiProjectTestResults():
             # at the bottom of that file.
             for test_result in self.test_results:
                 test_result.print_results(print_failed_only=True)
-            sys.stderr.write(f"[  FAILED  ] {self.tests_failed,} tests in "
-                             f"{self.had_failures} projects.\n")
+            sys.stderr.write(
+                f"[  FAILED  ] {self.tests_failed,} tests in "
+                f"{self.had_failures} projects.\n"
+            )
 
 
 def test_should_run(testname: str, test_filters: Optional[list[re.Pattern]]):
@@ -223,13 +246,14 @@ def projects_to_test(
     Args:
         build_config: TrustyBuildConfig object.
         projects: Names of the projects to search for active tests.
-        test_filters: List that limits the tests to run. Projects
-            without any tests that match a filter will be skipped.
+        test_filters: List that limits the tests to run. Projects without any
+          tests that match a filter will be skipped.
         run_disabled_tests: Also run disabled tests from config file.
 
     Returns:
         A list of projects with tests that should be run
     """
+
     def has_test(name: str):
         project = build_config.get_project(name)
         for test in project.tests:
@@ -258,7 +282,7 @@ def run_tests(
     test_filters: Optional[list[re.Pattern]] = None,
     verbose: bool = False,
     debug_on_error: bool = False,
-    emulator: bool = True
+    emulator: bool = True,
 ) -> TestResults:
     """Run tests for a project.
 
@@ -286,12 +310,13 @@ def run_tests(
         try:
             if run := sys.modules.get("run"):
                 if not run.__file__.startswith(project_root):
-                    # run module was imported for another project and needs to be
-                    # replaced with the one for the current project.
+                    # run module was imported for another project and needs
+                    # to be replaced with the one for the current project.
                     run = importlib.reload(run)
             else:
-                # first import in this interpreter instance, we use importlib rather
-                # than a regular import statement since it avoids linter warnings.
+                # first import in this interpreter instance, we use importlib
+                # rather than a regular import statement since it avoids
+                # linter warnings.
                 run = importlib.import_module("run")
             sys.path.pop()
         except ImportError:
@@ -303,12 +328,14 @@ def run_tests(
         print()
         print("Running", name, "on", test_results.project)
         if cmd:
-            print("Command line:",
-                  " ".join([s.replace(" ", "\\ ") for s in cmd]))
+            print(
+                "Command line:", " ".join([s.replace(" ", "\\ ") for s in cmd])
+            )
         sys.stdout.flush()
 
-    def run_test(test, parent_test: Optional[TrustyCompositeTest] = None,
-                 retry=True) -> int:
+    def run_test(
+        test, parent_test: Optional[TrustyCompositeTest] = None, retry=True
+    ) -> int:
         """Execute a single test and print out helpful information"""
         nonlocal test_env, test_runner
         cmd = test.command[1:]
@@ -335,25 +362,29 @@ def run_tests(
                         break
 
             case TrustyTest():
-                # Benchmark runs on QEMU are meaningless and take a lot of CI time
-                # One can still run the bootport test manually if desired
+                # Benchmark runs on QEMU are meaningless and take a lot of
+                # CI time. One can still run the bootport test manually
+                # if desired
                 if test.port_type == PortType.BENCHMARK:
                     ignore_tests = True
                 else:
                     if isinstance(test, TrustyAndroidTest):
                         print_test_command(test.name, [test.shell_command])
                     else:
-                        # port tests are identified by their port name, no command
+                        # port tests are identified by their port name,
+                        # no command
                         print_test_command(test.name)
 
                     if not test_env:
                         test_env = load_test_environment()
                     if test_env:
                         if not test_runner:
-                            test_runner = test_env.init(android=build_config.android,
-                                                        disable_rpmb=disable_rpmb,
-                                                        verbose=verbose,
-                                                        debug_on_error=debug_on_error)
+                            test_runner = test_env.init(
+                                android=build_config.android,
+                                disable_rpmb=disable_rpmb,
+                                verbose=verbose,
+                                debug_on_error=debug_on_error,
+                            )
                         status = test_env.run_test(test_runner, cmd)
                     else:
                         ignore_tests = True
@@ -368,32 +399,41 @@ def run_tests(
                 return 0
             case TrustyRebootCommand():
                 raise RuntimeError(
-                    "Reboot may only be used inside compositetest")
+                    "Reboot may only be used inside compositetest"
+                )
             case _:
                 raise NotImplementedError(f"Don't know how to run {test.name}")
 
         if not ignore_tests:
             elapsed = time.time() - test_start_time
-            print(f"{test.name:s} returned {status:d} after {elapsed:.3f} seconds")
+            print(
+                f"{test.name:s} returned {status:d} after {elapsed:.3f} seconds"
+            )
 
             if status and retry and test_results.retried_count < MAX_RETRIES:
-                print(f"retrying potentially flaky test {test.name} on",
-                    test_results.project)
-                # TODO: first retry the test without restarting the test environment
-                #       and if that fails, restart and then retry if < MAX_RETRIES.
+                print(
+                    f"retrying potentially flaky test {test.name} on",
+                    test_results.project,
+                )
+                # TODO: first retry the test without restarting the test
+                #       environment and if that fails, restart and then
+                #       retry if < MAX_RETRIES.
                 if test_env:
                     test_env.shutdown(test_runner)
                     test_runner = None
                 status = run_test(test, parent_test, retry=False)
+            elif status == 0:
+                test_results.add_result(
+                    test.name, TEST_STATUS.PASSED, not retry
+                )
             else:
-                if status == 0:
-                    test_results.add_result(test.name, TEST_STATUS.PASSED, not retry)
-                else:
-                    test_results.add_result(test.name, TEST_STATUS.FAILED, not retry)
+                test_results.add_result(
+                    test.name, TEST_STATUS.FAILED, not retry
+                )
             return status
         else:
             test_results.add_result(test.name, TEST_STATUS.SKIPPED, not retry)
-            return 0 # success
+            return 0  # success
 
     # the retry mechanism is intended to allow a batch run of all tests to pass
     # even if a small handful of tests exhibit flaky behavior. If a test filter
@@ -428,7 +468,7 @@ def test_projects(
     test_filters: Optional[list[re.Pattern]] = None,
     verbose: bool = False,
     debug_on_error: bool = False,
-    emulator: bool = True
+    emulator: bool = True,
 ) -> MultiProjectTestResults:
     """Run tests for multiple project.
 
@@ -438,7 +478,7 @@ def test_projects(
         projects: Names of the projects to run tests for.
         run_disabled_tests: Also run disabled tests from config file.
         test_filters: Optional list that limits the tests to run. Projects
-            without any tests that match a filter will be skipped.
+          without any tests that match a filter will be skipped.
         verbose: Enable debug output.
         debug_on_error: Wait for debugger connection on errors.
 
@@ -447,21 +487,26 @@ def test_projects(
     """
     if test_filters:
         projects = projects_to_test(
-            build_config, projects, test_filters,
-            run_disabled_tests=run_disabled_tests)
+            build_config,
+            projects,
+            test_filters,
+            run_disabled_tests=run_disabled_tests,
+        )
 
     results = []
     for project in projects:
-        results.append(run_tests(
-            build_config,
-            root,
-            project,
-            run_disabled_tests=run_disabled_tests,
-            test_filters=test_filters,
-            verbose=verbose,
-            debug_on_error=debug_on_error,
-            emulator=emulator
-        ))
+        results.append(
+            run_tests(
+                build_config,
+                root,
+                project,
+                run_disabled_tests=run_disabled_tests,
+                test_filters=test_filters,
+                verbose=verbose,
+                debug_on_error=debug_on_error,
+                emulator=emulator,
+            )
+        )
     return MultiProjectTestResults(results)
 
 
@@ -473,31 +518,50 @@ def default_root() -> str:
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("project", type=str, nargs="+",
-                        help="Project(s) to test.")
-    parser.add_argument("--build-root", type=str, default=default_root(),
-                        help="Root of intermediate build directory.")
-    parser.add_argument("--run_disabled_tests",
-                        help="Also run disabled tests from config file.",
-                        action="store_true")
-    parser.add_argument("--test", type=str, action="append",
-                        help="Only run tests that match the provided regexes.")
-    parser.add_argument("--verbose", help="Enable debug output.",
-                        action="store_true")
-    parser.add_argument("--debug_on_error",
-                        help="Wait for debugger connection on errors.",
-                        action="store_true")
+    parser.add_argument(
+        "project", type=str, nargs="+", help="Project(s) to test."
+    )
+    parser.add_argument(
+        "--build-root",
+        type=str,
+        default=default_root(),
+        help="Root of intermediate build directory.",
+    )
+    parser.add_argument(
+        "--run_disabled_tests",
+        help="Also run disabled tests from config file.",
+        action="store_true",
+    )
+    parser.add_argument(
+        "--test",
+        type=str,
+        action="append",
+        help="Only run tests that match the provided regexes.",
+    )
+    parser.add_argument(
+        "--verbose", help="Enable debug output.", action="store_true"
+    )
+    parser.add_argument(
+        "--debug_on_error",
+        help="Wait for debugger connection on errors.",
+        action="store_true",
+    )
     args = parser.parse_args()
 
     build_config = TrustyBuildConfig()
 
-    test_filters = ([re.compile(test) for test in args.test]
-                    if args.test else None)
-    test_results = test_projects(build_config, args.build_root, args.project,
-                                run_disabled_tests=args.run_disabled_tests,
-                                test_filters=test_filters,
-                                verbose=args.verbose,
-                                debug_on_error=args.debug_on_error)
+    test_filters = (
+        [re.compile(test) for test in args.test] if args.test else None
+    )
+    test_results = test_projects(
+        build_config,
+        args.build_root,
+        args.project,
+        run_disabled_tests=args.run_disabled_tests,
+        test_filters=test_filters,
+        verbose=args.verbose,
+        debug_on_error=args.debug_on_error,
+    )
     test_results.print_results()
 
     if test_results.failed_projects:
