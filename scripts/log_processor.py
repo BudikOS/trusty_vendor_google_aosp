@@ -183,6 +183,7 @@ class LogProcessor(threading.Thread):
         white = "\x1b[37;20m"
         bold_white = "\x1b[37;1m"
         grey = "\x1b[38;20m"
+        bold = "\x1b[1m"
         reset = "\x1b[0m"
 
     def __init__(self, stream, err, pinned, lock, colored, log_file):
@@ -335,17 +336,17 @@ class LogProcessor(threading.Thread):
                     # keep it as is
                     pass
                 elif (pos := line.lower().find('error')) != -1:
-                    line = self.colorize(line[:pos], self.color.bold_white) + \
+                    line = self.colorize(line[:pos], self.color.bold) + \
                            self.colorize('error', self.color.bold_red) + \
                            self.colorize(line[pos + len('error'):],
-                                         self.color.bold_white)
+                                         self.color.bold)
                 elif (pos := line.lower().find('warning')) != -1:
-                    line = self.colorize(line[:pos], self.color.bold_white) + \
+                    line = self.colorize(line[:pos], self.color.bold) + \
                            self.colorize('warning', self.color.bold_magenta) + \
                            self.colorize(line[pos + len('warning'):],
-                                         self.color.bold_white)
+                                         self.color.bold)
                 else:
-                    line = self.colorize(line, self.color.bold_white)
+                    line = self.colorize(line, self.color.bold)
 
             self.erase_pinned()
             print(line, end = "")
