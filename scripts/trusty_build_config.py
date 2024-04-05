@@ -55,7 +55,8 @@ class TrustyBuildConfigProject(object):
 class TrustyPortTestFlags(object):
     """Stores need flags for a test or provide flags for a test environment."""
 
-    ALLOWED_FLAGS = {"android", "storage_boot", "storage_full", "smp4", "abl"}
+    ALLOWED_FLAGS = {"android", "storage_boot", "storage_full",
+                     "smp4", "abl", "tablet"}
 
     def __init__(self, **flags):
         self.flags = set()
@@ -346,7 +347,8 @@ class TrustyBuildConfig(object):
                                                storage_boot=True,
                                                storage_full=True,
                                                smp4=True,
-                                               abl=True)
+                                               abl=True,
+                                               tablet=True)
 
             return [test.into_androidporttest(nameprefix=nameprefix,
                                               cmdargs=cmdargs,
