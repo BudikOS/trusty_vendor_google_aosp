@@ -43,6 +43,11 @@ export BUILDTOOLS_BINDIR=${TRUSTY_TOP}/prebuilts/build-tools/linux-x86/bin
 export BUILDTOOLS_COMMON=${TRUSTY_TOP}/prebuilts/build-tools/common
 export PY3=$BUILDTOOLS_BINDIR/py3-cmd
 
+SOONG_UI=$TRUSTY_TOP/build/soong/soong_ui.bash
+if [ -f "$SOONG_UI" ]; then
+    export SOONG_UI
+fi
+
 if [ -f "$TRUSTY_TOP/external/lk/engine.mk" ]; then
     export LKROOT=$TRUSTY_TOP/external/lk
 elif [ -f "$TRUSTY_TOP/external/trusty/lk/engine.mk" ]; then
