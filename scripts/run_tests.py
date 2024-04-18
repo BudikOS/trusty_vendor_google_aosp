@@ -28,7 +28,6 @@ Run tests for a project.
 """
 
 import argparse
-from collections import namedtuple
 from enum import Enum
 import importlib
 import os
@@ -43,9 +42,35 @@ from trusty_build_config import TrustyAndroidTest, TrustyBuildConfig
 from trusty_build_config import TrustyHostTest, TrustyRebootCommand
 
 
-TestResult = namedtuple("TestResult", "test status retried")
-
 TEST_STATUS = Enum("TEST_STATUS", ["PASSED", "FAILED", "SKIPPED"])
+
+class TestResult:
+    """Stores results for a single test.
+
+    Attributes:
+        test: Name of the test.
+        status: Test's integer return code, or None if this test was skipped.
+        retried: True if this test was retried.
+    """
+    test: str
+    status: Optional[int]
+    retried: bool
+
+    def __init__(self, test: str, status: Optional[int], retried: bool):
+        self.test = test
+        self.status = status
+        self.retried = retried
+
+    def test_status(self) -> TEST_STATUS:
+        if self.status is None:
+            return TEST_STATUS.SKIPPED
+        return TEST_STATUS.PASSED if self.status == 0 else TEST_STATUS.FAILED
+
+    def failed(self) -> bool:
+        return self.test_status() == TEST_STATUS.FAILED
+
+    def __format__(self, _format_spec: str) -> str:
+        return f"{self.test:s} returned {self.status:d}"
 
 
 class TestResults(object):
@@ -72,22 +97,20 @@ class TestResults(object):
         self.retried_count = 0
         self.test_results = []
 
-    def add_result(
-        self, test: str, cur_test_status: TEST_STATUS, retried: bool
-    ):
+    def add_result(self, result: TestResult):
         """Add a test result."""
-        self.test_results.append(TestResult(test, cur_test_status, retried))
-        if cur_test_status == TEST_STATUS.PASSED:
+        self.test_results.append(result)
+        if result.test_status() == TEST_STATUS.PASSED:
             self.passed_count += 1
-            if retried:
+            if result.retried:
                 self.flaked_count += 1
-        elif cur_test_status == TEST_STATUS.FAILED:
+        elif result.test_status() == TEST_STATUS.FAILED:
             self.failed_count += 1
             self.passed = False
-        elif cur_test_status == TEST_STATUS.SKIPPED:
+        elif result.test_status() == TEST_STATUS.SKIPPED:
             self.skipped_count += 1
 
-        if retried:
+        if result.retried:
             self.retried_count += 1
 
     def print_results(self, print_failed_only=False):
@@ -108,7 +131,7 @@ class TestResults(object):
         )
         if test_count:
             for result in self.test_results:
-                match (result.status, result.retried, print_failed_only):
+                match (result.test_status(), result.retried, print_failed_only):
                     case (TEST_STATUS.FAILED, _, _):
                         out.write(f"[  FAILED  ] {result.test}\n")
                     case (TEST_STATUS.SKIPPED, _, False):
@@ -335,38 +358,46 @@ def run_tests(
 
     def run_test(
         test, parent_test: Optional[TrustyCompositeTest] = None, retry=True
-    ) -> int:
-        """Execute a single test and print out helpful information"""
+    ) -> Optional[TestResult]:
+        """Execute a single test and print out helpful information
+
+        Returns:
+            The results of running this test, or None for non-tests, like
+            reboots or tests that don't work in this environment.
+        """
         nonlocal test_env, test_runner
         cmd = test.command[1:]
         disable_rpmb = True if "--disable_rpmb" in cmd else None
 
         test_start_time = time.time()
-        ignore_tests = False
 
         if not emulator and not isinstance(test, TrustyHostTest):
-            return 0
+            return None
 
         match test:
             case TrustyHostTest():
                 # append nice and expand path to command
                 cmd = ["nice", f"{project_root}/{test.command[0]}"] + cmd
                 print_test_command(test.name, cmd)
-                status = subprocess.call(cmd)
+                cmd_status = subprocess.call(cmd)
+                result = TestResult(test.name, cmd_status, False)
             case TrustyCompositeTest():
-                status = 0
+                status_code: Optional[int] = 0
                 for subtest in test.sequence:
-                    if status := run_test(subtest, test, retry):
+                    subtest_result = run_test(subtest, test, retry)
+                    if subtest_result and subtest_result.failed():
+                        status_code = subtest_result.status
                         # fail the composite test with the same status code as
                         # the first failing subtest
                         break
+                result = TestResult(test.name, status_code, False)
 
             case TrustyTest():
                 # Benchmark runs on QEMU are meaningless and take a lot of
                 # CI time. One can still run the bootport test manually
                 # if desired
                 if test.port_type == PortType.BENCHMARK:
-                    ignore_tests = True
+                    return TestResult(test.name, None, False)
                 else:
                     if isinstance(test, TrustyAndroidTest):
                         print_test_command(test.name, [test.shell_command])
@@ -385,9 +416,10 @@ def run_tests(
                                 verbose=verbose,
                                 debug_on_error=debug_on_error,
                             )
-                        status = test_env.run_test(test_runner, cmd)
+                        cmd_status = test_env.run_test(test_runner, cmd)
+                        result = TestResult(test.name, cmd_status, False)
                     else:
-                        ignore_tests = True
+                        return TestResult(test.name, None, False)
             case TrustyRebootCommand() if parent_test:
                 assert isinstance(parent_test, TrustyCompositeTest)
                 if test_env:
@@ -396,7 +428,7 @@ def run_tests(
                     print("Shut down test environment on", test_results.project)
                 # return early so we do not report the time to reboot or try to
                 # add the reboot command to test results.
-                return 0
+                return None
             case TrustyRebootCommand():
                 raise RuntimeError(
                     "Reboot may only be used inside compositetest"
@@ -404,36 +436,29 @@ def run_tests(
             case _:
                 raise NotImplementedError(f"Don't know how to run {test.name}")
 
-        if not ignore_tests:
-            elapsed = time.time() - test_start_time
-            print(
-                f"{test.name:s} returned {status:d} after {elapsed:.3f} seconds"
-            )
+        elapsed = time.time() - test_start_time
+        print( f"{result} after {elapsed:.3f} seconds")
 
-            if status and retry and test_results.retried_count < MAX_RETRIES:
-                print(
-                    f"retrying potentially flaky test {test.name} on",
-                    test_results.project,
-                )
-                # TODO: first retry the test without restarting the test
-                #       environment and if that fails, restart and then
-                #       retry if < MAX_RETRIES.
-                if test_env:
-                    test_env.shutdown(test_runner)
-                    test_runner = None
-                status = run_test(test, parent_test, retry=False)
-            elif status == 0:
-                test_results.add_result(
-                    test.name, TEST_STATUS.PASSED, not retry
-                )
-            else:
-                test_results.add_result(
-                    test.name, TEST_STATUS.FAILED, not retry
-                )
-            return status
+        can_retry = retry and test_results.retried_count < MAX_RETRIES
+        if result and result.failed() and can_retry:
+            print(
+                f"retrying potentially flaky test {test.name} on",
+                test_results.project,
+            )
+            # TODO: first retry the test without restarting the test
+            #       environment and if that fails, restart and then
+            #       retry if < MAX_RETRIES.
+            if test_env:
+                test_env.shutdown(test_runner)
+                test_runner = None
+            retried_result = run_test(test, parent_test, retry=False)
+            # Know this is the kind of test that returns a status b/c it failed
+            assert retried_result is not None
+            retried_result.retried = True
+            return retried_result
         else:
-            test_results.add_result(test.name, TEST_STATUS.SKIPPED, not retry)
-            return 0  # success
+            # Test passed, was skipped, or we're not retrying it.
+            return result
 
     # the retry mechanism is intended to allow a batch run of all tests to pass
     # even if a small handful of tests exhibit flaky behavior. If a test filter
@@ -448,7 +473,8 @@ def run_tests(
             if not test_should_run(test.name, test_filters):
                 continue
 
-            run_test(test, None, retry)
+            if result := run_test(test, None, retry):
+                test_results.add_result(result)
     finally:
         # finally is used here to make sure that we attempt to shutdown the
         # test environment no matter whether an exception was raised or not
