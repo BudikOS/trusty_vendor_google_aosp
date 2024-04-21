@@ -422,6 +422,23 @@ def archive_symbols(args, project):
         )
 
 
+def archive_listings(args, project):
+    """Archive lst files for the kernel and each trusted app"""
+    proj_buildroot = os.path.join(args.build_root, "build-" + project)
+    filename = os.path.join(args.archive, f"{project}-{args.buildid}.lst.zip")
+
+    with ZipFile(filename, "a", compression=ZIP_DEFLATED) as zip_archive:
+        print("Archiving .lst in " + os.path.relpath(filename, args.archive))
+
+        # archive the kernel elf file
+        zip_file(zip_archive, os.path.join(proj_buildroot, "lk.elf.lst"))
+
+        # archive path/to/app.lst for each trusted app
+        zip_dir(
+            zip_archive, proj_buildroot, "", lambda f: f.endswith(".lst")
+        )
+
+
 def create_uuid_map(args, project):
     """Creating a mapping txt file for uuid and symbol files"""
 
@@ -533,6 +550,9 @@ def archive(build_config, args):
 
         # copy out symbol files for kernel and apps
         archive_symbols(args, project)
+
+        # copy out listings files for kernel and apps
+        archive_listings(args, project)
 
         # create map between UUID and symbolic files
         create_uuid_map(args, project)
