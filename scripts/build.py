@@ -430,10 +430,7 @@ def archive_listings(args, project):
     with ZipFile(filename, "a", compression=ZIP_DEFLATED) as zip_archive:
         print("Archiving .lst in " + os.path.relpath(filename, args.archive))
 
-        # archive the kernel elf file
-        zip_file(zip_archive, os.path.join(proj_buildroot, "lk.elf.lst"))
-
-        # archive path/to/app.lst for each trusted app
+        # archive all .lst files under the buildroot
         zip_dir(
             zip_archive, proj_buildroot, "", lambda f: f.endswith(".lst")
         )
