@@ -481,8 +481,6 @@
 
             # Test Binder RPC between Android and Trusty
             androidtest(name="binder-rpc-to-trusty-test",
-                        # Test is run manually by the test_binder target
-                        enabled=False,
                         command="/data/nativetest64/vendor/"
                                 "binderRpcToTrustyTest/"
                                 "binderRpcToTrustyTest"),
