@@ -116,6 +116,7 @@
             boottests([
                 include("trusty/kernel/build-config-kerneltests"),
                 include("trusty/user/base/build-config-usertests"),
+                include("trusty/user/app/sample/build-config-boottests"),
             ]),
             # Android shell port tests - same as above, but triggered with
             # Linux + android userspace present
