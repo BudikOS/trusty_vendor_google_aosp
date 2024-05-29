@@ -247,7 +247,7 @@
                                 "/vendor/bin/trusty-ut-ctrl "
                                 "com.android.keymaster-unittest"),
 
-            # Test automatic clearing of tp filesystem when userdata is cleared
+            # Test automatic clearing of td filesystem when userdata is cleared
             # - Stage 1
             # -- Simulate user-data wipe (by removing data/vendor/ss/0 and
             #    restarting storageproxyd)
@@ -283,7 +283,7 @@
             #    no longer empty, but the old super blocks refer to data in the
             #    previous deleted file.
             # -- Trigger cleanup in test app.
-            androidtest(name="storage-tp-clear-test",
+            androidtest(name="storage-td-clear-test",
                         command="function storage-unittest { "
                                 "/vendor/bin/trusty-ut-ctrl "
                                 "com.android.storage-unittest.$1"
