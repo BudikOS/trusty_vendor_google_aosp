@@ -523,6 +523,7 @@ def archive(build_config, args):
 
         # copy out lk image
         archive_build_file(args, project, "lk.bin")
+        archive_build_file(args, project, "lk.elf")
 
         # copy out qemu package if it exists
         archive_build_file(
