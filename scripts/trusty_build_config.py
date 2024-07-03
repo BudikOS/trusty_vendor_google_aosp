@@ -185,16 +185,50 @@ class TrustyCommand:
         return self
 
 
+class RebootMode(StrEnum):
+    REGULAR = "reboot"
+    FACTORY_RESET = "reboot (with factory reset)"
+    FULL_WIPE = "reboot (with full wipe)"
+
+    def factory_reset(self) -> bool:
+        """Whether this reboot includes a factory reset.
+        This function exists because we can't make the test runner module depend
+        on types defined here, so its function args have to be builtins.
+        """
+        match self:
+            case RebootMode.REGULAR:
+                return False
+            case RebootMode.FACTORY_RESET:
+                return True
+            case RebootMode.FULL_WIPE:
+                return True
+
+    def full_wipe(self) -> bool:
+        """Whether this reboot includes a an RPMB wipe.
+        This function exists because we can't make the test runner module depend
+        on types defined here, so its function args have to be builtins.
+        """
+        match self:
+            case RebootMode.REGULAR:
+                return False
+            case RebootMode.FACTORY_RESET:
+                return False
+            case RebootMode.FULL_WIPE:
+                return True
+
+
 class TrustyRebootCommand(TrustyCommand):
     """Marker object which causes the test environment to be rebooted before the
        next test is run. Used to reset the test environment and to test storage.
-
-       TODO: The current qemu.py script does a factory reset as part a reboot.
-             We probably want a parameter or separate command to control that.
     """
-    def __init__(self):
-        super().__init__("reboot command")
+    def __init__(self, mode: RebootMode = RebootMode.FACTORY_RESET):
+        super().__init__(mode)
+        self.mode = mode
 
+class TrustyTestPrint(TrustyCommand):
+
+    def msg(self) -> str:
+        return self.name
 
 class TrustyCompositeTest(TrustyTest):
     """Stores a sequence of tests that must execute in order"""
@@ -393,7 +427,9 @@ class TrustyBuildConfig(object):
             "androidporttests": androidporttests,
             "needs": needs,
             "reboot": TrustyRebootCommand,
+            "RebootMode": RebootMode,
             "devsigningkeys": devsigningkeys,
+            "print": TrustyTestPrint,
         }
 
         with open(path, encoding="utf8") as f:
