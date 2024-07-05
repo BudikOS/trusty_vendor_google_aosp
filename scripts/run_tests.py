@@ -581,9 +581,14 @@ def main():
         help="Wait for debugger connection on errors.",
         action="store_true",
     )
+    parser.add_argument(
+        "--android",
+        type=str,
+        help="Path to an Android build to run tests against.",
+    )
     args = parser.parse_args()
 
-    build_config = TrustyBuildConfig()
+    build_config = TrustyBuildConfig(android=args.android)
 
     test_filters = (
         [re.compile(test) for test in args.test] if args.test else None
