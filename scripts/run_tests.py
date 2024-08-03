@@ -40,7 +40,7 @@ from typing import Optional
 from trusty_build_config import PortType, TrustyCompositeTest, TrustyTest
 from trusty_build_config import TrustyAndroidTest, TrustyBuildConfig
 from trusty_build_config import TrustyHostTest, TrustyRebootCommand
-from trusty_build_config import TrustyTestPrint
+
 
 TEST_STATUS = Enum("TEST_STATUS", ["PASSED", "FAILED", "SKIPPED"])
 
@@ -423,24 +423,15 @@ def run_tests(
             case TrustyRebootCommand() if parent_test:
                 assert isinstance(parent_test, TrustyCompositeTest)
                 if test_env:
-                    test_env.shutdown(test_runner, test.mode.factory_reset(),
-                                      full_wipe=test.mode.full_wipe())
+                    test_env.shutdown(test_runner)
                     test_runner = None
-                    print(f"Shutting down to {test.mode} test environment on "
-                          f"{test_results.project}")
+                    print("Shut down test environment on", test_results.project)
                 # return early so we do not report the time to reboot or try to
                 # add the reboot command to test results.
                 return None
             case TrustyRebootCommand():
                 raise RuntimeError(
                     "Reboot may only be used inside compositetest"
-                )
-            case TrustyTestPrint() if parent_test:
-                print(test.msg())
-                return None
-            case TrustyTestPrint():
-                raise RuntimeError(
-                    "Print may only be used inside compositetest"
                 )
             case _:
                 raise NotImplementedError(f"Don't know how to run {test.name}")
