@@ -484,7 +484,7 @@
             androidtest(name="binder-rpc-to-trusty-test",
                         command="/data/nativetest64/vendor/"
                                 "binderRpcToTrustyTest/"
-                                "binderRpcToTrustyTest"),
+                                "binderRpcToTrustyTest64"),
         ],
     ),
 ]
