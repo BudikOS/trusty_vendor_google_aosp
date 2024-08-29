@@ -40,6 +40,7 @@ from typing import Optional
 from trusty_build_config import PortType, TrustyCompositeTest, TrustyTest
 from trusty_build_config import TrustyAndroidTest, TrustyBuildConfig
 from trusty_build_config import TrustyHostTest, TrustyRebootCommand
+from trusty_build_config import TrustyPrintCommand
 
 
 TEST_STATUS = Enum("TEST_STATUS", ["PASSED", "FAILED", "SKIPPED"])
@@ -301,6 +302,7 @@ def run_tests(
     build_config: TrustyBuildConfig,
     root: os.PathLike,
     project: str,
+    qemu_instance_id: Optional[str],
     run_disabled_tests: bool = False,
     test_filters: Optional[list[re.Pattern]] = None,
     verbose: bool = False,
@@ -313,6 +315,9 @@ def run_tests(
         build_config: TrustyBuildConfig object.
         root: Trusty build root output directory.
         project: Project name.
+        qemu_instance_id: name of the QEmu instance to use. If the instance
+            doesn't already exist, a new fresh instance will be created. If
+            None, use the default instance.
         run_disabled_tests: Also run disabled tests from config file.
         test_filters: Optional list that limits the tests to run.
         verbose: Enable debug output.
@@ -327,6 +332,10 @@ def run_tests(
     test_results = TestResults(project)
     test_env = None
     test_runner = None
+
+    if not qemu_instance_id:
+        qemu_instance_id = "default"
+    qemu_instance_dir = f"{project_root}/qemu-instances/{qemu_instance_id}"
 
     def load_test_environment():
         sys.path.append(project_root)
@@ -412,6 +421,7 @@ def run_tests(
                         if not test_runner:
                             test_runner = test_env.init(
                                 android=build_config.android,
+                                instance_dir=qemu_instance_dir,
                                 disable_rpmb=disable_rpmb,
                                 verbose=verbose,
                                 debug_on_error=debug_on_error,
@@ -423,15 +433,24 @@ def run_tests(
             case TrustyRebootCommand() if parent_test:
                 assert isinstance(parent_test, TrustyCompositeTest)
                 if test_env:
-                    test_env.shutdown(test_runner)
+                    test_env.shutdown(test_runner, test.mode.factory_reset(),
+                                      full_wipe=test.mode.full_wipe())
                     test_runner = None
-                    print("Shut down test environment on", test_results.project)
+                    print(f"Shutting down to {test.mode} test environment on "
+                          f"{test_results.project}")
                 # return early so we do not report the time to reboot or try to
                 # add the reboot command to test results.
                 return None
             case TrustyRebootCommand():
                 raise RuntimeError(
                     "Reboot may only be used inside compositetest"
+                )
+            case TrustyPrintCommand() if parent_test:
+                print(test.msg())
+                return None
+            case TrustyPrintCommand():
+                raise RuntimeError(
+                    "Print may only be used inside compositetest"
                 )
             case _:
                 raise NotImplementedError(f"Don't know how to run {test.name}")
@@ -490,6 +509,7 @@ def test_projects(
     build_config: TrustyBuildConfig,
     root: os.PathLike,
     projects: list[str],
+    qemu_instance_id: Optional[str] = None,
     run_disabled_tests: bool = False,
     test_filters: Optional[list[re.Pattern]] = None,
     verbose: bool = False,
@@ -502,6 +522,9 @@ def test_projects(
         build_config: TrustyBuildConfig object.
         root: Trusty build root output directory.
         projects: Names of the projects to run tests for.
+        qemu_instance_id: name of the QEmu instance to use. If the instance
+            doesn't already exist, a new fresh instance will be created. If
+            None, use the default instance.
         run_disabled_tests: Also run disabled tests from config file.
         test_filters: Optional list that limits the tests to run. Projects
           without any tests that match a filter will be skipped.
@@ -526,6 +549,7 @@ def test_projects(
                 build_config,
                 root,
                 project,
+                qemu_instance_id=qemu_instance_id,
                 run_disabled_tests=run_disabled_tests,
                 test_filters=test_filters,
                 verbose=verbose,
@@ -546,6 +570,14 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "project", type=str, nargs="+", help="Project(s) to test."
+    )
+    parser.add_argument(
+        "--instance-id",
+        type=str,
+        default=None,
+        help=("ID of a QEmu instance to use for the tests. A fresh instance "
+              "will be created if no instance with this ID already exists."
+              "'default' will be used if no value is provided.")
     )
     parser.add_argument(
         "--build-root",
@@ -588,6 +620,7 @@ def main():
         build_config,
         args.build_root,
         args.project,
+        qemu_instance_id=args.instance_id,
         run_disabled_tests=args.run_disabled_tests,
         test_filters=test_filters,
         verbose=args.verbose,

@@ -829,6 +829,7 @@ def main(default_config=None, emulator=True):
             build_config,
             args.build_root,
             projects,
+            qemu_instance_id=None,
             run_disabled_tests=args.run_disabled_tests,
             test_filters=test_filters,
             verbose=args.verbose,
