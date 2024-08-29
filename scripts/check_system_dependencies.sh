@@ -11,7 +11,6 @@ DEPS=(
   mypy
   pkg-config
   pylint
-  xxd
 )
 
 if !(echo ${DEPS[@]} | tr " " "\n" | sort --check); then

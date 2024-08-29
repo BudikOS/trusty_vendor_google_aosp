@@ -42,6 +42,7 @@ export ARCH_x86_TOOLCHAIN_PREFIX=${CLANG_BINDIR}/llvm-
 export BUILDTOOLS_BINDIR=${TRUSTY_TOP}/prebuilts/build-tools/linux-x86/bin
 export BUILDTOOLS_COMMON=${TRUSTY_TOP}/prebuilts/build-tools/common
 export PY3=$BUILDTOOLS_BINDIR/py3-cmd
+export PATH_TOOLS_BINDIR=${TRUSTY_TOP}/prebuilts/build-tools/path/linux-x86
 
 SOONG_UI=$TRUSTY_TOP/build/soong/soong_ui.bash
 if [ -f "$SOONG_UI" ]; then
