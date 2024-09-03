@@ -530,6 +530,11 @@ def archive(build_config, args):
             args, project, "trusty_qemu_package.zip", optional=True
         )
 
+        # copy out emulator image package if it exists
+        archive_build_file(
+            args, project, "trusty_image_package.tar.gz", optional=True
+        )
+
         # copy out test package if it exists
         archive_build_file(
             args, project, "trusty_test_package.zip", optional=True
