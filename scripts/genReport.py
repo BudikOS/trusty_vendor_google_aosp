@@ -24,7 +24,7 @@ import subprocess
 import sys
 
 def genProfdata(files, llvmDir):
-    llvmProfdataBin = str(str(os.path.join(llvmDir, 'llvm-profdata')))
+    llvmProfdataBin = os.path.join(llvmDir, 'llvm-profdata')
     subprocess_cmd = [llvmProfdataBin, 'merge']
 
     subprocess_cmd.extend(files)
@@ -33,26 +33,23 @@ def genProfdata(files, llvmDir):
     subprocess.call(subprocess_cmd)
 
 def genHtml(llvmDir, objects, out):
-    llvmCovBin = str(str(os.path.join(llvmDir, 'llvm-cov')))
+    llvmCovBin = os.path.join(llvmDir, 'llvm-cov')
     subprocess_cmd = [
         llvmCovBin,
         'show',
         '-instr-profile=out.profdata',
-        '-object'
     ]
-
     subprocess_cmd.extend(objects)
     subprocess_cmd.extend(['-use-color', '--format=html'])
     with(open(out+'.html', 'w', encoding='utf-8')) as f:
         subprocess.call(subprocess_cmd, stdout=f)
 
 def genJson(llvmDir, objects, out, summary_only=True):
-    llvmCovBin = str(str(os.path.join(llvmDir, 'llvm-cov')))
+    llvmCovBin = os.path.join(llvmDir, 'llvm-cov')
     subprocess_cmd = [
         llvmCovBin,
         'export',
         '-instr-profile=out.profdata',
-        '-object'
     ]
     subprocess_cmd.extend(objects)
     if summary_only:
@@ -62,13 +59,12 @@ def genJson(llvmDir, objects, out, summary_only=True):
         subprocess.call(subprocess_cmd, stdout=f)
 
 def genLcov(llvmDir, objects, out, summary_only=True):
-    llvmCovBin = str(str(os.path.join(llvmDir, 'llvm-cov')))
+    llvmCovBin = os.path.join(llvmDir, 'llvm-cov')
     subprocess_cmd = [
         llvmCovBin,
         'export',
         '-format=lcov',
         '-instr-profile=out.profdata',
-        '-object'
     ]
     subprocess_cmd.extend(objects)
     if summary_only:
@@ -131,19 +127,22 @@ def main():
         return
 
     profrawFiles = [
-        str(os.path.join(args.profraw_dir, f))
+        os.path.join(args.profraw_dir, f)
         for f in os.listdir(args.profraw_dir) if f.endswith('.profraw')]
     if len(profrawFiles) == 0:
         print('No profraw files found in directory ' + args.profraw_dir)
 
     genProfdata(profrawFiles, args.llvm_dir)
+    objects = []
+    for obj in args.objects:
+        objects.extend(['-object', obj])
 
     if args.format == 'html':
-        genHtml(args.llvm_dir, args.objects, args.output)
+        genHtml(args.llvm_dir, objects, args.output)
     elif args.format == 'json':
-        genJson(args.llvm_dir, args.objects, args.output, args.summary_only)
+        genJson(args.llvm_dir, objects, args.output, args.summary_only)
     elif args.format == 'lcov':
-        genLcov(args.llvm_dir, args.objects, args.output, args.summary_only)
+        genLcov(args.llvm_dir, objects, args.output, args.summary_only)
     else:
         print('Only json / html / lcov supported')
         return
