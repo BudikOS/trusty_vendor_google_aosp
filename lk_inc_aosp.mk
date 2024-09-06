@@ -21,6 +21,8 @@ LKINC ?=  $(LKROOT) \
           trusty/user/base \
           trusty/device/arm/generic-arm64 \
           trusty/device/arm/vexpress-a15 \
+          trusty/device/desktop/arm64/desktop-arm64 \
+          trusty/device/desktop/x86_64/desktop-x86_64 \
           trusty/device/nxp/imx7d \
           trusty/device/x86/generic-x86_64 \
           trusty/vendor/google/aosp \
