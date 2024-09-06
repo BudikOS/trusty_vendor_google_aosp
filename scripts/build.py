@@ -46,8 +46,6 @@ from trusty_build_config import (
 
 from log_processor import LogEngine
 
-script_dir = os.path.dirname(os.path.abspath(__file__))
-
 TRUSTED_APP_MAKEFILE_PATH = "trusty/user/base/make/trusted_app.mk"
 TRUSTED_LOADABLE_APP_MAKEFILE_PATH = "trusty/kernel/make/loadable_app.mk"
 GEN_MANIFEST_MAKEFILE_PATH = "trusty/user/base/make/gen_manifest.mk"
@@ -259,7 +257,7 @@ def assemble_sdk(build_config, args):
             archive_file(sdk_archive, doc_file)
 
         # Add clang version info
-        envsetup = os.path.join(script_dir, "envsetup.sh")
+        envsetup = os.path.join(args.script_dir, "envsetup.sh")
         cmd = f"source {envsetup} && echo $CLANG_BINDIR"
         clang_bindir = (
             subprocess.check_output(cmd, shell=True, executable="/bin/bash")
@@ -326,7 +324,7 @@ def build(args):
             f"-f $LKROOT/makefile -j {args.jobs}"
         )
         # Call envsetup.  If it fails, abort.
-        envsetup = os.path.join(script_dir, "envsetup.sh")
+        envsetup = os.path.join(args.script_dir, "envsetup.sh")
         cmd = f"source {envsetup:s} && ({cmd:s})"
 
         # check if we are attached to a real terminal
@@ -478,7 +476,7 @@ def create_uuid_map(args, project):
 
 def create_scripts_archive(args, project):
     """Create an archive for the scripts"""
-    coverage_script = os.path.join(script_dir, "genReport.py")
+    coverage_script = os.path.join(args.script_dir, "genReport.py")
     scripts_zip = os.path.join(
         args.archive, f"{project}-{args.buildid}.scripts.zip"
     )
@@ -667,8 +665,6 @@ def create_test_map(args, build_config, projects):
 
 
 def main(default_config=None, emulator=True):
-    top = os.path.abspath(os.path.join(script_dir, "../../../../.."))
-
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
@@ -681,7 +677,7 @@ def main(default_config=None, emulator=True):
     parser.add_argument(
         "--build-root",
         type=os.path.abspath,
-        default=os.path.join(top, "build-root"),
+        default=None,
         help="Root of intermediate build directory.",
     )
     parser.add_argument(
@@ -760,17 +756,35 @@ def main(default_config=None, emulator=True):
         action="store_true",
         help="Do not use nice to run the build.",
     )
+    parser.add_argument(
+        "--script-dir",
+        type=os.path.abspath,
+        default=os.path.dirname(os.path.abspath(__file__)),
+        help="Override the path to the directory of the script. This is for a "
+             "workaround to support the Soong-built binary."
+    )
     args = parser.parse_args()
+
 
     # Change the current directory to the Trusty root
     # We do this after parsing all the arguments because
-    # some of the paths, e.g., build-root, might be relative
+    # some of the paths, e.g., script-dir, might be relative
     # to the directory that the script was called from, not
     # to the Trusty root directory
+    top = os.path.abspath(os.path.join(args.script_dir, "../../../../.."))
     os.chdir(top)
 
+    if not args.build_root:
+        args.build_root = os.path.join(top, "build-root")
+
+    # Depending on trusty_build_config.py's default config path doesn't work on
+    # the Soong-built python binary.
+    config_file = args.config
+    if not config_file:
+        config_file = os.path.join(args.script_dir, "build-config")
+
     build_config = TrustyBuildConfig(
-        config_file=args.config, android=args.android
+        config_file=config_file, android=args.android
     )
 
     projects = []
