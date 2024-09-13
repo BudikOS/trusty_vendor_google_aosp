@@ -233,10 +233,12 @@
                                 "exit 1;"
                                 "fi"),
 
+            # Check whether the kernel has been tainted, ignoring
+            # certain causes like out-of-tree and unsigned modules.
             androidtest(name="untainted-linux",
                         command="TAINTED=$(cat /proc/sys/kernel/tainted)"
                                 "&&"
-                                "if [[ \"${TAINTED}\" != \"0\" ]];"
+                                "if (( ${TAINTED} & ~0x3000 ));"
                                 "then "
                                 "echo Linux kernel tainted ${TAINTED};"
                                 "exit 1;"
