@@ -31,6 +31,10 @@ gettop() {
 export TRUSTY_TOP=$(gettop)
 export CLANG_BINDIR=${TRUSTY_TOP}/prebuilts/clang/host/linux-x86/clang-r498229b/bin
 export CLANG_HOST_LIBDIR=${CLANG_BINDIR}/../lib
+export CLANG_GCC_TOOLCHAIN=${TRUSTY_TOP}/prebuilts/gcc/linux-x86/host/x86_64-linux-glibc2.17-4.8
+export CLANG_HOST_SYSROOT=${CLANG_GCC_TOOLCHAIN}/sysroot
+export CLANG_HOST_SEARCHDIR=${CLANG_GCC_TOOLCHAIN}/lib/gcc/x86_64-linux/4.8.3
+export CLANG_HOST_LDDIRS="${CLANG_GCC_TOOLCHAIN}/lib/gcc/x86_64-linux/4.8.3 ${CLANG_GCC_TOOLCHAIN}/x86_64-linux/lib64"
 export CLANG_TOOLS_BINDIR=${TRUSTY_TOP}/prebuilts/clang-tools/linux-x86/bin
 export LINUX_CLANG_BINDIR=${TRUSTY_TOP}/prebuilts/clang/host/linux-x86/clang-r498229b/bin
 export RUST_BINDIR=${TRUSTY_TOP}/prebuilts/rust/linux-x86/1.80.1/bin
