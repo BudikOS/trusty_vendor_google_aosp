@@ -91,6 +91,9 @@
         "trusty/device/arm/generic-arm64/project/keys/apploader_sign_test_private_key_0.der",
         "trusty/device/arm/generic-arm64/project/keys/apploader_sign_test_public_key_0.der"
     ]),
+    docs([
+        "trusty/user/base/sdk/README.md",
+    ]),
     include("./test-map"),
     include("../../proprietary/scripts/build-config", optional=True),
 ]
