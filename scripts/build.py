@@ -48,7 +48,6 @@ from log_processor import LogEngine
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 
-SDK_README_PATH = "trusty/user/base/sdk/README.md"
 TRUSTED_APP_MAKEFILE_PATH = "trusty/user/base/make/trusted_app.mk"
 TRUSTED_LOADABLE_APP_MAKEFILE_PATH = "trusty/kernel/make/loadable_app.mk"
 GEN_MANIFEST_MAKEFILE_PATH = "trusty/user/base/make/gen_manifest.mk"
@@ -255,8 +254,9 @@ def assemble_sdk(build_config, args):
         archive_file(sdk_archive, TRUSTED_LOADABLE_APP_MAKEFILE_PATH, "make")
         archive_file(sdk_archive, GEN_MANIFEST_MAKEFILE_PATH, "make")
 
-        # Copy SDK README
-        archive_file(sdk_archive, SDK_README_PATH)
+        # Copy doc files
+        for doc_file in build_config.doc_files:
+            archive_file(sdk_archive, doc_file)
 
         # Add clang version info
         envsetup = os.path.join(script_dir, "envsetup.sh")
