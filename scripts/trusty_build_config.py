@@ -277,6 +277,8 @@ class TrustyBuildConfig(object):
         self.projects = {}
         self.dist = []
         self.default_signing_keys = []
+        self.doc_files = []
+
         if config_file is None:
             config_file = os.path.join(script_dir, "build-config")
         self.read_config_file(config_file)
@@ -408,6 +410,8 @@ class TrustyBuildConfig(object):
                     project.signing_keys = []
                 project.signing_keys.extend(overrides)
 
+        def docs(doc_files: List[str]):
+            self.doc_files.extend(doc_files)
 
         file_format = {
             "BENCHMARK": PortType.BENCHMARK,
@@ -430,6 +434,7 @@ class TrustyBuildConfig(object):
             "RebootMode": RebootMode,
             "devsigningkeys": devsigningkeys,
             "print": TrustyPrintCommand,
+            "docs": docs,
         }
 
         with open(path, encoding="utf8") as f:
