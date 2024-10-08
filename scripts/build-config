@@ -60,7 +60,9 @@
     build(
         projects=[
             "desktop-arm64",
+            "desktop-arm64-test",
             "desktop-x86_64",
+            "desktop-x86_64-test",
             "generic-arm32-debug",
             "generic-arm32",
             "generic-arm32-test-debug",
