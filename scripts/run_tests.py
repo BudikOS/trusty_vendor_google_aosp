@@ -345,6 +345,12 @@ def run_tests(
                     # run module was imported for another project and needs
                     # to be replaced with the one for the current project.
                     run = importlib.reload(run)
+
+                    # Reload qemu and qemu_error because run.py uses them
+                    if qemu := sys.modules.get("qemu"):
+                        importlib.reload(qemu)
+                    if qemu_error := sys.modules.get("qemu_error"):
+                        importlib.reload(qemu_error)
             else:
                 # first import in this interpreter instance, we use importlib
                 # rather than a regular import statement since it avoids
