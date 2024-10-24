@@ -25,12 +25,29 @@ import sys
 
 def genProfdata(files, llvmDir):
     llvmProfdataBin = os.path.join(llvmDir, 'llvm-profdata')
+
+    # To prevent args characters from exceeding the limitation,
+    # we split the files into several batches and merge them one by one.
+    batch_size = 10
+    profraws_length = len(files)
+    profdata_list = []
+    for offset in range(0, profraws_length, batch_size):
+        profdata_filename = f'{offset}.profdata'
+        profdata_list.append(profdata_filename)
+
+        subprocess_cmd = [llvmProfdataBin, 'merge']
+        subprocess_cmd.extend(files[offset:min(offset+batch_size, profraws_length)])
+        subprocess_cmd.extend([f'-o={profdata_filename}'])
+
+        subprocess.call(subprocess_cmd)
+
     subprocess_cmd = [llvmProfdataBin, 'merge']
-
-    subprocess_cmd.extend(files)
+    subprocess_cmd.extend(profdata_list)
     subprocess_cmd.extend(['-o=out.profdata'])
-
     subprocess.call(subprocess_cmd)
+
+    for profdata in profdata_list:
+        os.remove(profdata)
 
 def genHtml(llvmDir, objects, out):
     llvmCovBin = os.path.join(llvmDir, 'llvm-cov')
