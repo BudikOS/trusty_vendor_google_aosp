@@ -310,6 +310,50 @@
                                 "/vendor/bin/trusty-ut-ctrl "
                                 "com.android.keymaster-unittest"),
 
+            # Test that storage sessions behave correctly when proxy restarts
+            androidtest(
+                name="com.android.storage-reconnect-test.tp.reconnect",
+                command="/vendor/bin/trusty-ut-ctrl "
+                        "com.android.storage-reconnect-test.tp.before "
+                        "&&"
+                        "stop storageproxyd"
+                        "&&"
+                        "/vendor/bin/trusty-ut-ctrl "
+                        "com.android.storage-reconnect-test.tp.during "
+                        "&&"
+                        "start storageproxyd"
+                        "&&"
+                        "/vendor/bin/trusty-ut-ctrl "
+                        "com.android.storage-reconnect-test.tp.after "),
+            androidtest(
+                name="com.android.storage-reconnect-test.td.reconnect",
+                command="/vendor/bin/trusty-ut-ctrl "
+                        "com.android.storage-reconnect-test.td.before "
+                        "&&"
+                        "stop storageproxyd"
+                        "&&"
+                        "/vendor/bin/trusty-ut-ctrl "
+                        "com.android.storage-reconnect-test.td.during "
+                        "&&"
+                        "start storageproxyd"
+                        "&&"
+                        "/vendor/bin/trusty-ut-ctrl "
+                        "com.android.storage-reconnect-test.td.after "),
+            androidtest(
+                name="com.android.storage-reconnect-test.tdp.reconnect",
+                command="/vendor/bin/trusty-ut-ctrl "
+                        "com.android.storage-reconnect-test.tdp.before "
+                        "&&"
+                        "stop storageproxyd"
+                        "&&"
+                        "/vendor/bin/trusty-ut-ctrl "
+                        "com.android.storage-reconnect-test.tdp.during "
+                        "&&"
+                        "start storageproxyd"
+                        "&&"
+                        "/vendor/bin/trusty-ut-ctrl "
+                        "com.android.storage-reconnect-test.tdp.after "),
+
             # Test confirmation UI
             androidtest(name="vts:confirmationui@1.0",
                         command="/data/nativetest64/"
