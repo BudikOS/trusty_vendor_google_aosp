@@ -127,7 +127,7 @@ genrule_defaults {
 }
 
 // TODO(b/375543636): determine whether we'll include the Android build ID or not.
-genrule_cmd_template = "(rm -rf $(genDir)/build-root && mkdir -p $(genDir)/build-root && " +
+genrule_cmd_template = "(mkdir -p $(genDir)/build-root && " +
     "cp -t . external/trusty/lk/makefile trusty/vendor/google/aosp/lk_inc.mk && " +
     "AIDL_RUST_GLUE_TOOL=$(location aidl_rust_glue) PROTOC_TOOL=$(location aprotoc) " +
     "PROTOC_PLUGIN_BINARY=$(location trusty_metrics_atoms_protoc_plugin) " +
