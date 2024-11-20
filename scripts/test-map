@@ -265,6 +265,11 @@
                                 "'/sys/devices/platform/trusty/"
                                 "trusty:test/trusty_test_run'"),
 
+            androidtest(name="fpsimdtest",
+                        command="echo 'fpsimd:1000' >"
+                                "'/sys/devices/platform/trusty/"
+                                "trusty:test/trusty_test_run'"),
+
             # TIPC tests
             androidtest(name="tipc:ta2ta",
                         command="/data/nativetest64/vendor/tipc-test/tipc-test "
