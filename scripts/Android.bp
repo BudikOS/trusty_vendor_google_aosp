@@ -2,6 +2,11 @@ python_binary_host {
     name: "build_trusty",
     srcs: ["*.py"],
     main: "build.py",
+    version: {
+        py3: {
+            embedded_launcher: true,
+        },
+    },
 }
 
 genrule_defaults {
