@@ -189,38 +189,50 @@
             # Trusty linux driver tests. Unbind and bind to trigger remove and
             # probe function.
             androidtest(name="irq-driver",
-                        command="echo 'trusty:irq' >"
+                        command="TRUSTY_DEV=$(basename /sys/bus/platform/devices/"
+                                "?(*:)trusty?(-core):irq)"
+                                "&&"
+                                "echo $TRUSTY_DEV >"
                                 "/sys/bus/platform/drivers/trusty-irq/unbind"
                                 "&&"
-                                "echo 'trusty:irq' >"
+                                "echo $TRUSTY_DEV >"
                                 "/sys/bus/platform/drivers/trusty-irq/bind"),
 
             androidtest(name="log-driver",
-                        command="echo 'trusty:log' >"
+                        command="TRUSTY_DEV=$(basename /sys/bus/platform/devices/"
+                                "?(*:)trusty?(-core):log)"
+                                "&&"
+                                "echo $TRUSTY_DEV >"
                                 "/sys/bus/platform/drivers/trusty-log/unbind"
                                 "&&"
-                                "echo 'trusty:log' >"
+                                "echo $TRUSTY_DEV >"
                                 "/sys/bus/platform/drivers/trusty-log/bind"),
 
             androidtest(name="virtio-driver",
                         # virtio remove currently hangs (bug: 142275662).
                         # Disable test until fixed
                         enabled=False,
-                        command="echo 'trusty:virtio' >"
+                        command="TRUSTY_DEV=$(basename /sys/bus/platform/devices/"
+                                "?(*:)trusty?(-core):virtio)"
+                                "&&"
+                                "echo $TRUSTY_DEV >"
                                 "/sys/bus/platform/drivers/trusty-virtio/unbind"
                                 "&&"
-                                "echo 'trusty:virtio' >"
+                                "echo $TRUSTY_DEV >"
                                 "/sys/bus/platform/drivers/trusty-virtio/bind"),
 
             androidtest(name="trusty-driver",
                         # virtio remove currently hangs (bug: 142275662).
                         # Disable affected test until fixed
                         enabled=False,
-                        command="echo trusty >"
-                                "/sys/bus/platform/drivers/trusty/unbind"
+                        command="TRUSTY_DEV=$(basename /sys/bus/platform/devices/"
+                                "?(*:)trusty?(-core))"
                                 "&&"
-                                "echo trusty >"
-                                "/sys/bus/platform/drivers/trusty/bind"),
+                                "echo $TRUSTY_DEV >"
+                                "$(echo /sys/bus/platform/drivers/trusty?(-core)/unbind)"
+                                "&&"
+                                "echo $TRUSTY_DEV >"
+                                "$(echo /sys/bus/platform/drivers/trusty?(-core)/bind)"),
 
             # test that trusty driver started and got a version string
             androidtest(name="trusty-driver-version",
