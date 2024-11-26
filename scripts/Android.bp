@@ -150,10 +150,10 @@ genrule {
 }
 
 genrule {
-    name: "trusty-arm64-test.lk.elf.gen",
+    name: "trusty-arm64-virt-test-debug.lk.elf.gen",
     defaults: ["lk.elf.defaults"],
-    out: ["generic-arm64-test.lk.elf"],
-    cmd: "PROJECT_NAME=generic-arm64-test; " + genrule_cmd_template,
+    out: ["generic-arm64-virt-test-debug.lk.elf"],
+    cmd: "PROJECT_NAME=generic-arm64-virt-test-debug; " + genrule_cmd_template,
 }
 
 genrule {
@@ -191,7 +191,7 @@ prebuilt_etc {
     enabled: false,
     arch: {
         arm64: {
-            src: ":trusty-arm64-test.lk.elf.gen",
+            src: ":trusty-arm64-virt-test-debug.lk.elf.gen",
             enabled: true,
         },
         x86_64: {
