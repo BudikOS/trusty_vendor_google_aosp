@@ -225,7 +225,7 @@
             # test that trusty driver started and got a version string
             androidtest(name="trusty-driver-version",
                         command="TRUSTY_VERSION=$(cat /sys/bus/platform/"
-                                "devices/trusty/trusty_version)"
+                                "devices/?(*:)trusty?(-core)/trusty_version)"
                                 "&&"
                                 "echo Trusty version: ${TRUSTY_VERSION}"
                                 "&&"
@@ -262,13 +262,13 @@
                                 "0x800000,10,2,2 "
                                 "0x800000,2,100,0 "
                                 "0x1000,10,10,10' >"
-                                "'/sys/devices/platform/trusty/"
-                                "trusty:test/trusty_test_run'"),
+                                "$(echo /sys/bus/platform/devices/"
+                                "?(*:)trusty?(-core):test/trusty_test_run)"),
 
             androidtest(name="fpsimdtest",
                         command="echo 'fpsimd:1000' >"
-                                "'/sys/devices/platform/trusty/"
-                                "trusty:test/trusty_test_run'"),
+                                "$(echo /sys/bus/platform/devices/"
+                                "?(*:)trusty?(-core):test/trusty_test_run)"),
 
             # TIPC tests
             androidtest(name="tipc:ta2ta",
