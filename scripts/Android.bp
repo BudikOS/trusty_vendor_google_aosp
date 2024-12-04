@@ -130,6 +130,7 @@ genrule_defaults {
         "build_trusty",
         "trusty_metrics_atoms_protoc_plugin",
     ],
+    keep_gendir: true,
 }
 
 // TODO(b/375543636): determine whether we'll include the Android build ID or not.
