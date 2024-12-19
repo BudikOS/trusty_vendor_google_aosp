@@ -60,9 +60,9 @@ if [ -f "$SOONG_UI" ]; then
 fi
 
 if [ -f "$TRUSTY_TOP/external/lk/engine.mk" ]; then
-    export LKROOT=$TRUSTY_TOP/external/lk
+    export LKROOT=external/lk
 elif [ -f "$TRUSTY_TOP/external/trusty/lk/engine.mk" ]; then
-    export LKROOT=$TRUSTY_TOP/external/trusty/lk
+    export LKROOT=external/trusty/lk
 else
     echo "Error: Couldn't locate the LK root directory." 1>&2
     exit 1
