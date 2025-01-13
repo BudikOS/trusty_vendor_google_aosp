@@ -9,10 +9,9 @@ python_binary_host {
     },
 }
 
-genrule_defaults {
-    name: "lk.elf.defaults",
-    use_nsjail: true,
-    dir_srcs: [
+dirgroup {
+    name: "trusty_aosp_dirgroups",
+    dirs: [
         ":trusty_dirgroup_external_boringssl",
         ":trusty_dirgroup_external_dtc",
         ":trusty_dirgroup_external_freetype",
@@ -124,7 +123,24 @@ genrule_defaults {
         ":trusty_dirgroup_trusty_user_base",
         ":trusty_dirgroup_trusty_vendor_google_aosp",
     ],
+    visibility: [
+        "//trusty/vendor/google/aosp/scripts",
+        "//trusty/vendor/google/proprietary/scripts",
+    ],
+}
+
+filegroup {
+    name: "trusty_aosp_filegroups",
     srcs: [":trusty_filegroup_external_libcxx"],
+}
+
+genrule_defaults {
+    name: "lk.elf.defaults",
+    use_nsjail: true,
+    dir_srcs: [
+        ":trusty_aosp_dirgroups",
+    ],
+    srcs: [":trusty_aosp_filegroups"],
     tools: [
         "aidl_rust_glue",
         "aprotoc",
