@@ -29,10 +29,11 @@ gettop() {
 }
 
 if [ -z ${TRUSTY_BUILD_CLANG_VERSION} ]; then
-    TRUSTY_BUILD_CLANG_VERSION=clang-r522817
+    #clang-r536225 reports version as 19.0.1 which is also what Rust 1.82 was built with
+    TRUSTY_BUILD_CLANG_VERSION=clang-r536225
 fi
 if [ -z ${TRUSTY_BUILD_RUST_VERSION} ]; then
-    TRUSTY_BUILD_RUST_VERSION=1.80.1
+    TRUSTY_BUILD_RUST_VERSION=1.82.0
 fi
 export TRUSTY_TOP=$(gettop)
 export CLANG_BINDIR=${TRUSTY_TOP}/prebuilts/clang/host/linux-x86/${TRUSTY_BUILD_CLANG_VERSION}/bin
