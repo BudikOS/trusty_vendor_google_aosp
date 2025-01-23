@@ -154,7 +154,7 @@ genrule_defaults {
 genrule_cmd_template = "(mkdir -p $(genDir)/build-root && " +
     "cp -t . external/trusty/lk/makefile trusty/vendor/google/aosp/lk_inc.mk && " +
     "AIDL_RUST_GLUE_TOOL=$(location aidl_rust_glue) PROTOC_TOOL=$(location aprotoc) " +
-    "PROTOC_PLUGIN_BINARY=$(location trusty_metrics_atoms_protoc_plugin) " +
+    "PROTOC_PLUGIN_BINARY=$(location trusty_metrics_atoms_protoc_plugin) TRUSTY_SKIP_DOCS=true " +
     "$(location build_trusty) --script-dir trusty/vendor/google/aosp/scripts --buildid AVF_BUILTIN --verbose $$PROJECT_NAME " +
     "--build-root $(genDir)/build-root 1>$(genDir)/stdout.log 2>$(genDir)/stderr.log || (" +
     "echo Trusty build FAILED; echo stdout:; cat $(genDir)/stdout.log; echo stderr:; cat $(genDir)/stderr.log; false)) && " +
