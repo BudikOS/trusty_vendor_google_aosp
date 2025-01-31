@@ -81,6 +81,7 @@
             "qemu-generic-arm32-gicv3-test-debug",
             "qemu-generic-arm32-test-debug",
             "qemu-generic-arm64-fuzz-test-debug",
+            "qemu-generic-arm64-gicv3-hafnium-test-debug",
             "qemu-generic-arm64-gicv3-spd-ffa-test-debug",
             "qemu-generic-arm64-gicv3-spd-noffa-test-debug",
             "qemu-generic-arm64-gicv3-test-debug",
