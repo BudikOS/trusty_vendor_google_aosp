@@ -83,6 +83,22 @@
         ],
     ),
 
+    testmap(
+        projects=[
+            "qemu-generic-arm64-gicv3-hafnium-test-debug",
+        ],
+        tests=[
+            # TODO(b/122357282): the Hafnium build should run all the tests,
+            # but currently it does not even boot. When that is fixed,
+            # we should just move qemu-generic-arm64-gicv3-hafnium-test-debug
+            # below to the full testmap.
+            #
+            # For now, we're adding a placeholder test so we can get some
+            # build artifacts.
+            hosttest("avb_test"),
+        ],
+    ),
+
 
     testmap(
         projects=[
