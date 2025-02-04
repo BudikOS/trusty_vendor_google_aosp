@@ -61,6 +61,7 @@
         projects=[
             "desktop-arm64",
             "desktop-arm64-test",
+            "desktop-arm64-test-debug",
             "desktop-x86_64",
             "desktop-x86_64-test",
             "generic-arm32-debug",
@@ -78,6 +79,7 @@
             "vexpress-a15-trusty",
             "imx7d",
             "pico7d",
+            "qemu-desktop-arm64-test-debug",
             "qemu-generic-arm32-gicv3-test-debug",
             "qemu-generic-arm32-test-debug",
             "qemu-generic-arm64-fuzz-test-debug",
