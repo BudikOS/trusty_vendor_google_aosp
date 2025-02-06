@@ -85,23 +85,6 @@
 
     testmap(
         projects=[
-            "qemu-generic-arm64-gicv3-hafnium-test-debug",
-        ],
-        tests=[
-            # TODO(b/122357282): the Hafnium build should run all the tests,
-            # but currently it does not even boot. When that is fixed,
-            # we should just move qemu-generic-arm64-gicv3-hafnium-test-debug
-            # below to the full testmap.
-            #
-            # For now, we're adding a placeholder test so we can get some
-            # build artifacts.
-            hosttest("avb_test"),
-        ],
-    ),
-
-
-    testmap(
-        projects=[
             "generic-arm64-test-debug",
         ],
         tests=[
@@ -135,6 +118,21 @@
                 include("trusty/user/base/build-config-usertests"),
                 include("trusty/user/app/sample/build-config-boottests"),
             ]),
+        ],
+    ),
+    testmap(
+        projects=[
+            "qemu-generic-arm32-gicv3-test-debug",
+            "qemu-generic-arm32-test-debug",
+            "qemu-generic-arm64-fuzz-test-debug",
+            "qemu-generic-arm64-gicv3-hafnium-test-debug",
+            "qemu-generic-arm64-gicv3-spd-ffa-test-debug",
+            "qemu-generic-arm64-gicv3-spd-noffa-test-debug",
+            "qemu-generic-arm64-gicv3-test-debug",
+            "qemu-generic-arm64-test-debug",
+            "qemu-generic-arm64u32-test-debug",
+        ],
+        tests=[
             # Android shell port tests - same as above, but triggered with
             # Linux + android userspace present
             androidporttests([
