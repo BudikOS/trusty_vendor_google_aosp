@@ -109,6 +109,7 @@ dirgroup {
         ":trusty_dirgroup_system_teeui",
         ":trusty_dirgroup_system_tools_aidl",
         ":trusty_dirgroup_trusty_device_arm_generic-arm64",
+        ":trusty_dirgroup_trusty_device_common",
         ":trusty_dirgroup_trusty_device_x86_generic-x86_64",
         ":trusty_dirgroup_trusty_kernel",
         ":trusty_dirgroup_trusty_user_app_avb",
