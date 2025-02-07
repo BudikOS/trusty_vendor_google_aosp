@@ -98,7 +98,12 @@ class TrustyTest(object):
         return self
 
 class TrustyHostTest(TrustyTest):
-    """Stores a pair of a test name and a command to run on host."""
+    """Stores a pair of a test name and a command to run on host.
+
+    TrustyHostTest is for tests that run solely on the host.
+    This is different from TrustyHostcommandTest, which runs tests on
+    the host that issue commands to a running Android device via adb.
+    """
 
     class TrustyHostTestFlags:
         """Enable needs to be matched with provides without special casing"""
@@ -126,6 +131,35 @@ class TrustyAndroidTest(TrustyTest):
             cmd += list(runargs)
         super().__init__(nameprefix + name, cmd, enabled, port_type)
         self.shell_command = command
+        if need:
+            self.need = need
+        else:
+            self.need = TrustyPortTestFlags()
+
+    def needs(self, **need):
+        self.need.set(**need)
+        return self
+
+class TrustyHostcommandTest(TrustyTest):
+    """Stores a test name and command to run on the host.
+
+    TrustyHostcommandTest runs tests on the host that issue commands to a
+    running Android device via adb. This is different from TrustyHostTest,
+    which is for tests that run solely on the host.
+    """
+
+    def __init__(self, name, command, need=None,
+                 port_type=PortType.TEST, enabled=True, nameprefix="",
+                 timeout=None):
+        nameprefix = nameprefix + "hostcommandtest:"
+
+        # cmd stores arguments that are passed to the test runner in qemu.py.
+        # The first item in the list isn't used.
+        cmd = [None, "--headless", "--host-command", command]
+        if timeout:
+            cmd += ['--timeout', str(timeout)]
+        super().__init__(nameprefix + name, cmd, enabled, port_type)
+
         if need:
             self.need = need
         else:
@@ -428,6 +462,7 @@ class TrustyBuildConfig(object):
             "hosttests": hosttests,
             "boottests": boottests,
             "androidtest": TrustyAndroidTest,
+            "hostcommandtest": TrustyHostcommandTest,
             "androidporttests": androidporttests,
             "needs": needs,
             "reboot": TrustyRebootCommand,
