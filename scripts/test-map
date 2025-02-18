@@ -215,14 +215,26 @@
                                 "/sys/bus/platform/drivers/trusty-irq/bind"),
 
             androidtest(name="log-driver",
+                        # logd currently goes into a busy loop if the trusty
+                        # log driver starts returning errors from poll and
+                        # read. Additionally, the trusty-log driver does not
+                        # wake up any waiters in unbind. This happens later
+                        # when there is output from trusty ready for them to
+                        # read. Stop logd while unbinding to work around these
+                        # bugs for now and avoid filling the kernel log with
+                        # error messages. (b/397453308)
                         command="TRUSTY_DEV=$(basename /sys/bus/platform/devices/"
                                 "?(*:)trusty?(-core):log)"
+                                "&&"
+                                "stop logd"
                                 "&&"
                                 "echo $TRUSTY_DEV >"
                                 "/sys/bus/platform/drivers/trusty-log/unbind"
                                 "&&"
                                 "echo $TRUSTY_DEV >"
-                                "/sys/bus/platform/drivers/trusty-log/bind"),
+                                "/sys/bus/platform/drivers/trusty-log/bind"
+                                "&&"
+                                "start logd"),
 
             androidtest(name="virtio-driver",
                         # virtio remove currently hangs (bug: 142275662).
