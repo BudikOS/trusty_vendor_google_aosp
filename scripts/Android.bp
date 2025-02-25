@@ -12,27 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-soong_config_module_type {
-    name: "trusty_vm_genrule",
-    module_type: "genrule",
-    config_namespace: "trusty_system_vm",
-    variables: ["buildtype"],
-    bool_variables: [
-        "enabled",
-        "placeholder_trusted_hal",
-    ],
-    properties: ["cmd"],
-}
-
-soong_config_string_variable {
-    name: "buildtype",
-    values: [
-        "user",
-        "userdebug",
-        "eng",
-    ],
-}
-
 python_binary_host {
     name: "build_trusty",
     srcs: ["*.py"],
@@ -196,7 +175,7 @@ genrule_cmd_template = "(mkdir -p $(genDir)/build-root && " +
     "echo Trusty build FAILED; echo stdout:; cat $(genDir)/stdout.log; echo stderr:; cat $(genDir)/stderr.log; false)) && " +
     "cp -f $(genDir)/build-root/build-$$PROJECT_NAME/lk.$$OUT_EXT $(out)"
 
-trusty_vm_genrule {
+genrule {
     name: "trusty_test_vm_arm64.bin",
     defaults: [
         "trusty_aosp.gen.defaults",
@@ -216,7 +195,7 @@ trusty_vm_genrule {
     }) + "; OUT_EXT=bin;" + genrule_cmd_template,
 }
 
-trusty_vm_genrule {
+genrule {
     name: "trusty_test_vm_x86_64.elf",
     defaults: [
         "trusty_aosp.gen.defaults",
@@ -236,7 +215,7 @@ trusty_vm_genrule {
     }) + "; OUT_EXT=elf;" + genrule_cmd_template,
 }
 
-trusty_vm_genrule {
+genrule {
     name: "trusty_security_vm_arm64.bin",
     defaults: [
         "trusty_aosp.gen.defaults",
@@ -256,7 +235,7 @@ trusty_vm_genrule {
     }) + "; OUT_EXT=bin;" + genrule_cmd_template,
 }
 
-trusty_vm_genrule {
+genrule {
     name: "trusty_security_vm_x86_64.elf",
     defaults: [
         "trusty_aosp.gen.defaults",
