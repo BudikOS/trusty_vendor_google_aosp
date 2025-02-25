@@ -171,7 +171,7 @@ filegroup {
 }
 
 genrule_defaults {
-    name: "trusty_vm.gen.defaults",
+    name: "trusty_aosp.gen.defaults",
     use_nsjail: true,
     dir_srcs: [
         ":trusty_aosp_dirgroups",
@@ -199,7 +199,7 @@ genrule_cmd_template = "(mkdir -p $(genDir)/build-root && " +
 trusty_vm_genrule {
     name: "trusty_test_vm_arm64.bin",
     defaults: [
-        "trusty_vm.gen.defaults",
+        "trusty_aosp.gen.defaults",
     ],
     out: [
         "trusty_test_vm_arm64.bin",
@@ -219,7 +219,7 @@ trusty_vm_genrule {
 trusty_vm_genrule {
     name: "trusty_test_vm_x86_64.elf",
     defaults: [
-        "trusty_vm.gen.defaults",
+        "trusty_aosp.gen.defaults",
     ],
     out: [
         "trusty_test_vm_x86_64.elf",
@@ -239,7 +239,7 @@ trusty_vm_genrule {
 trusty_vm_genrule {
     name: "trusty_security_vm_arm64.bin",
     defaults: [
-        "trusty_vm.gen.defaults",
+        "trusty_aosp.gen.defaults",
     ],
     out: [
         "trusty_security_vm_arm64.bin",
@@ -259,7 +259,7 @@ trusty_vm_genrule {
 trusty_vm_genrule {
     name: "trusty_security_vm_x86_64.elf",
     defaults: [
-        "trusty_vm.gen.defaults",
+        "trusty_aosp.gen.defaults",
     ],
     out: [
         "trusty_security_vm_x86_64.elf",
@@ -320,4 +320,41 @@ prebuilt_etc {
             filename: "trusty_security_vm_unsigned.elf",
         },
     },
+}
+
+// Trusty TEE image with Widevine OPK TA
+// TODO(b/375543636): determine whether we'll include the Android build ID or not.
+genrule_tee_cmd_template = "(mkdir -p $(genDir)/build-root && " +
+    "cp -t . external/trusty/lk/makefile trusty/vendor/google/aosp/lk_inc.mk && " +
+    "AIDL_RUST_GLUE_TOOL=$(location aidl_rust_glue) PROTOC_TOOL=$(location aprotoc) " +
+    "PROTOC_PLUGIN_BINARY=$(location trusty_metrics_atoms_protoc_plugin) " +
+    "QEMU_PREBUILTS_DIR=$(location trusty_qemu_system_aarch64) " +
+    "MKE2FS=$(location mke2fs) " +
+    "TRUSTY_SKIP_DOCS=true " +
+    "PACKAGE_TRUSTY_IMAGES_ONLY=true " +
+    "$(location build_trusty) --script-dir trusty/vendor/google/aosp/scripts --buildid AVF_BUILTIN --verbose $$PROJECT_NAME " +
+    "--skip-tests --build-root $(genDir)/build-root 1>$(genDir)/stdout.log 2>$(genDir)/stderr.log || (" +
+    "echo Trusty build FAILED; echo stdout:; cat $(genDir)/stdout.log; echo stderr:; cat $(genDir)/stderr.log; false)) && " +
+    "cp -f $(genDir)/build-root/build-$$PROJECT_NAME/trusty_image_package.tar.gz $(out)"
+
+genrule {
+    name: "trusty_tee_package",
+    enabled: select(soong_config_variable("trusty_tee", "enabled"), {
+        true: true,
+        default: false,
+    }),
+    defaults: [
+        "trusty_aosp.gen.defaults",
+    ],
+    tools: [
+        "trusty_qemu_system_aarch64",
+        "mke2fs",
+    ],
+    out: [
+        "trusty_tee_package.tar.gz",
+    ],
+    dist: {
+        targets: ["trusty-tee_package"],
+    },
+    cmd: "PROJECT_NAME=qemu-generic-arm64-gicv3-test-debug; " + genrule_tee_cmd_template,
 }
