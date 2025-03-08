@@ -211,6 +211,40 @@ genrule {
 }
 
 genrule {
+    name: "trusty_test_vm_os_arm64.bin",
+    defaults: [
+        "trusty_aosp.gen.defaults",
+    ],
+    out: [
+        "trusty_test_vm_os_arm64.bin",
+    ],
+    // IMPORTANT: OUT_EXT=bin for arm64
+    // the raw binary (not the elf) is needed for the avb signature process
+    cmd: "PROJECT_NAME=vm-arm64-test_os" + select(soong_config_variable("trusty_system_vm", "buildtype"), {
+        "userdebug": "-userdebug",
+        "eng": "-userdebug",
+        default: "-user",
+    }) + "; OUT_EXT=bin;" + genrule_cmd_template,
+}
+
+genrule {
+    name: "trusty_test_vm_os_x86_64.elf",
+    defaults: [
+        "trusty_aosp.gen.defaults",
+    ],
+    out: [
+        "trusty_test_vm_os_x86_64.elf",
+    ],
+    // IMPORTANT: OUT_EXT=elf for x86_64
+    // x86_64 VM payloads are not yet signed; crosvm consumes the elf
+    cmd: "PROJECT_NAME=vm-x86_64-test_os" + select(soong_config_variable("trusty_system_vm", "buildtype"), {
+        "userdebug": "-userdebug",
+        "eng": "-userdebug",
+        default: "-user",
+    }) + "; OUT_EXT=elf;" + genrule_cmd_template,
+}
+
+genrule {
     name: "trusty_security_vm_arm64.bin",
     defaults: [
         "trusty_aosp.gen.defaults",
@@ -270,6 +304,23 @@ prebuilt_etc {
         x86_64: {
             src: ":trusty_test_vm_x86_64.elf",
             filename: "trusty-test_vm.elf",
+            enabled: true,
+        },
+    },
+}
+
+prebuilt_etc {
+    name: "trusty_test_vm_os_unsigned",
+    enabled: false,
+    arch: {
+        arm64: {
+            src: ":trusty_test_vm_os_arm64.bin",
+            filename: "trusty-test_vm_os.bin",
+            enabled: true,
+        },
+        x86_64: {
+            src: ":trusty_test_vm_os_x86_64.elf",
+            filename: "trusty-test_vm_os.elf",
             enabled: true,
         },
     },
