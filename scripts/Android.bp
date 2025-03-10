@@ -119,6 +119,7 @@ dirgroup {
         ":trusty_dirgroup_system_tools_aidl",
         ":trusty_dirgroup_trusty_device_arm_generic-arm64",
         ":trusty_dirgroup_trusty_device_common",
+        ":trusty_dirgroup_trusty_device_desktop",
         ":trusty_dirgroup_trusty_device_x86_generic-x86_64",
         ":trusty_dirgroup_trusty_kernel",
         ":trusty_dirgroup_trusty_user_app_avb",
@@ -131,6 +132,7 @@ dirgroup {
         ":trusty_dirgroup_trusty_user_app_secretkeeper",
         ":trusty_dirgroup_trusty_user_app_storage",
         ":trusty_dirgroup_trusty_user_base",
+        ":trusty_dirgroup_trusty_user_desktop",
         ":trusty_dirgroup_trusty_vendor_google_aosp",
     ],
     visibility: [
