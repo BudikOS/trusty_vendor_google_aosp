@@ -41,6 +41,7 @@ from trusty_build_config import PortType, TrustyCompositeTest, TrustyTest
 from trusty_build_config import TrustyAndroidTest, TrustyBuildConfig
 from trusty_build_config import TrustyHostTest, TrustyRebootCommand
 from trusty_build_config import TrustyPrintCommand
+from trusty_build_config import TrustyHostcommandTest
 
 
 TEST_STATUS = Enum("TEST_STATUS", ["PASSED", "FAILED", "SKIPPED"])
@@ -419,6 +420,8 @@ def run_tests(
                 else:
                     if isinstance(test, TrustyAndroidTest):
                         print_test_command(test.name, [test.shell_command])
+                    elif isinstance(test, TrustyHostcommandTest):
+                        print_test_command(test.name, test.command[3:])
                     else:
                         # port tests are identified by their port name,
                         # no command
