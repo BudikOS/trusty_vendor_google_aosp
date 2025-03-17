@@ -84,7 +84,7 @@ dirgroup {
         ":trusty_dirgroup_external_rust_crates_unicode-ident",
         ":trusty_dirgroup_external_rust_crates_unicode-xid",
         ":trusty_dirgroup_external_rust_crates_uuid",
-        ":trusty_dirgroup_external_rust_crates_virtio-drivers",
+        ":trusty_dirgroup_external_rust_crates_virtio-drivers-and-devices",
         ":trusty_dirgroup_external_rust_crates_vm-memory",
         ":trusty_dirgroup_external_rust_crates_x509-cert",
         ":trusty_dirgroup_external_rust_crates_zerocopy",
