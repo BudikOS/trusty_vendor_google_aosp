@@ -299,8 +299,6 @@ genrule {
     out: [
         "trusty_desktop_vm_arm64.bin",
     ],
-    // IMPORTANT: OUT_EXT=bin for arm64
-    // the raw binary (not the elf) is needed for the avb signature process
     cmd: "PROJECT_NAME=desktop-arm64; OUT_EXT=bin;" + genrule_cmd_template,
 }
 
@@ -312,35 +310,29 @@ genrule {
     out: [
         "trusty_desktop_test_vm_arm64.bin",
     ],
-    // IMPORTANT: OUT_EXT=bin for arm64
-    // the raw binary (not the elf) is needed for the avb signature process
     cmd: "PROJECT_NAME=desktop-arm64-test; OUT_EXT=bin;" + genrule_cmd_template,
 }
 
 genrule {
-    name: "trusty_desktop_vm_x86_64.elf",
+    name: "trusty_desktop_vm_x86_64.bin",
     defaults: [
         "trusty_aosp.gen.defaults",
     ],
     out: [
-        "trusty_desktop_vm_x86_64.elf",
+        "trusty_desktop_vm_x86_64.bin",
     ],
-    // IMPORTANT: OUT_EXT=elf for x86_64
-    // x86_64 VM payloads are not yet signed; crosvm consumes the elf
-    cmd: "PROJECT_NAME=desktop-x86_64; OUT_EXT=elf;" + genrule_cmd_template,
+    cmd: "PROJECT_NAME=desktop-x86_64; OUT_EXT=bin;" + genrule_cmd_template,
 }
 
 genrule {
-    name: "trusty_desktop_test_vm_x86_64.elf",
+    name: "trusty_desktop_test_vm_x86_64.bin",
     defaults: [
         "trusty_aosp.gen.defaults",
     ],
     out: [
-        "trusty_desktop_test_vm_x86_64.elf",
+        "trusty_desktop_test_vm_x86_64.bin",
     ],
-    // IMPORTANT: OUT_EXT=elf for x86_64
-    // x86_64 VM payloads are not yet signed; crosvm consumes the elf
-    cmd: "PROJECT_NAME=desktop-x86_64-test; OUT_EXT=elf;" + genrule_cmd_template,
+    cmd: "PROJECT_NAME=desktop-x86_64-test; OUT_EXT=bin;" + genrule_cmd_template,
 }
 
 // - Trusty VM payloads on arm64 are pvmfw enabled
