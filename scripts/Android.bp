@@ -122,6 +122,7 @@ dirgroup {
         ":trusty_dirgroup_system_see_authmgr",
         ":trusty_dirgroup_system_teeui",
         ":trusty_dirgroup_system_tools_aidl",
+        ":trusty_dirgroup_test_vts-testcase_hal_treble_vintf_aidl",
         ":trusty_dirgroup_trusty_device_arm_generic-arm64",
         ":trusty_dirgroup_trusty_device_common",
         ":trusty_dirgroup_trusty_device_desktop",
