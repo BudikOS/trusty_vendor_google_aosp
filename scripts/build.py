@@ -320,6 +320,8 @@ def build(args):
         cmd = (
             f"export BUILDROOT={args.build_root};"
             f"export BUILDID={args.buildid};"
+            f"export ANDROID_BUILD_ARTIFACTS={args.android_artifacts};"
+            f"export KERNEL_BUILD_ARTIFACTS={args.kernel_artifacts};"
             f"{nice} $BUILDTOOLS_BINDIR/make {project} "
             f"-f $LKROOT/makefile -j {args.jobs}"
         )
@@ -745,6 +747,18 @@ def main(default_config=None, emulator=True):
         "--android",
         type=str,
         help="Path to an Android build to run tests against.",
+    )
+    parser.add_argument(
+        "--android-artifacts",
+        type=str,
+        help="Path to an Android artifacts to run tests against.",
+        default="",
+    )
+    parser.add_argument(
+        "--kernel-artifacts",
+        type=str,
+        help="Path to an Linux Kernel artifacts to run tests against.",
+        default="",
     )
     parser.add_argument(
         "--color-log",
