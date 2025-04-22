@@ -157,6 +157,8 @@ filegroup {
 genrule_defaults {
     name: "trusty_aosp.gen.defaults",
     use_nsjail: true,
+    uses_order_only_build_date_file: true,
+    uses_order_only_build_number_file: true,
     dir_srcs: [
         ":trusty_aosp_dirgroups",
     ],
@@ -170,12 +172,12 @@ genrule_defaults {
     keep_gendir: true,
 }
 
-// TODO(b/375543636): determine whether we'll include the Android build ID or not.
 genrule_cmd_template = "(mkdir -p $(genDir)/build-root && " +
     "cp -t . external/trusty/lk/makefile trusty/vendor/google/aosp/lk_inc.mk && " +
     "AIDL_RUST_GLUE_TOOL=$(location aidl_rust_glue) PROTOC_TOOL=$(location aprotoc) " +
     "PROTOC_PLUGIN_BINARY=$(location trusty_metrics_atoms_protoc_plugin) TRUSTY_SKIP_DOCS=true " +
-    "$(location build_trusty) --script-dir trusty/vendor/google/aosp/scripts --buildid AVF_BUILTIN --verbose $$PROJECT_NAME " +
+    "BUILDDATE=\"$$(date --date=@$$(cat $(build_date_file)))\" " +
+    "$(location build_trusty) --script-dir trusty/vendor/google/aosp/scripts --buildid \"$$(cat $(build_number_file))\" --verbose $$PROJECT_NAME " +
     "--build-root $(genDir)/build-root 1>$(genDir)/stdout.log 2>$(genDir)/stderr.log || (" +
     "echo Trusty build FAILED; echo stdout:; cat $(genDir)/stdout.log; echo stderr:; cat $(genDir)/stderr.log; false)) && " +
     "cp -f $(genDir)/build-root/build-$$PROJECT_NAME/lk.$$OUT_EXT $(out)"
@@ -402,7 +404,6 @@ prebuilt_etc {
 }
 
 // Trusty TEE image with Widevine OPK TA
-// TODO(b/375543636): determine whether we'll include the Android build ID or not.
 genrule_tee_cmd_template = "(mkdir -p $(genDir)/build-root && " +
     "cp -t . external/trusty/lk/makefile trusty/vendor/google/aosp/lk_inc.mk && " +
     "AIDL_RUST_GLUE_TOOL=$(location aidl_rust_glue) PROTOC_TOOL=$(location aprotoc) " +
@@ -411,7 +412,8 @@ genrule_tee_cmd_template = "(mkdir -p $(genDir)/build-root && " +
     "MKE2FS=$(location mke2fs) " +
     "TRUSTY_SKIP_DOCS=true " +
     "PACKAGE_TRUSTY_IMAGES_ONLY=true " +
-    "$(location build_trusty) --script-dir trusty/vendor/google/aosp/scripts --buildid AVF_BUILTIN --verbose $$PROJECT_NAME " +
+    "BUILDDATE=\"$$(date --date=@$$(cat $(build_date_file)))\" " +
+    "$(location build_trusty) --script-dir trusty/vendor/google/aosp/scripts --buildid \"$$(cat $(build_number_file))\" --verbose $$PROJECT_NAME " +
     "--skip-tests --build-root $(genDir)/build-root 1>$(genDir)/stdout.log 2>$(genDir)/stderr.log || (" +
     "echo Trusty build FAILED; echo stdout:; cat $(genDir)/stdout.log; echo stderr:; cat $(genDir)/stderr.log; false)) && " +
     "cp -f $(genDir)/build-root/build-$$PROJECT_NAME/trusty_image_package.tar.gz $(out)"
