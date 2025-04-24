@@ -194,14 +194,13 @@ genrule {
     ],
     // IMPORTANT: OUT_EXT=bin for arm64
     // the raw binary (not the elf) is needed for the avb signature process
-    cmd: "PROJECT_NAME=vm-arm64-test" + select(soong_config_variable("trusty_system_vm", "placeholder_trusted_hal"), {
-        true: "-placeholder-trusted-hal",
-        default: "",
-    }) + select(soong_config_variable("trusty_system_vm", "buildtype"), {
-        "userdebug": "-userdebug",
-        "eng": "-userdebug",
-        default: "-user",
-    }) + "; OUT_EXT=bin;" + genrule_cmd_template,
+    // b/390206831 remove -placeholder-trusted-hal when VM2TZ is up
+    cmd: "PROJECT_NAME=vm-arm64-test-placeholder-trusted-hal" +
+        select(soong_config_variable("trusty_system_vm", "buildtype"), {
+            "userdebug": "-userdebug",
+            "eng": "-userdebug",
+            default: "-user",
+        }) + "; OUT_EXT=bin;" + genrule_cmd_template,
 }
 
 genrule {
@@ -214,14 +213,13 @@ genrule {
     ],
     // IMPORTANT: OUT_EXT=elf for x86_64
     // x86_64 VM payloads are not yet signed; crosvm consumes the elf
-    cmd: "PROJECT_NAME=vm-x86_64-test" + select(soong_config_variable("trusty_system_vm", "placeholder_trusted_hal"), {
-        true: "-placeholder-trusted-hal",
-        default: "",
-    }) + select(soong_config_variable("trusty_system_vm", "buildtype"), {
-        "userdebug": "-userdebug",
-        "eng": "-userdebug",
-        default: "-user",
-    }) + "; OUT_EXT=elf;" + genrule_cmd_template,
+    // b/390206831 remove -placeholder-trusted-hal when VM2TZ is up
+    cmd: "PROJECT_NAME=vm-x86_64-test-placeholder-trusted-hal" +
+        select(soong_config_variable("trusty_system_vm", "buildtype"), {
+            "userdebug": "-userdebug",
+            "eng": "-userdebug",
+            default: "-user",
+        }) + "; OUT_EXT=elf;" + genrule_cmd_template,
 }
 
 genrule {
