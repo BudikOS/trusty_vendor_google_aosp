@@ -62,6 +62,7 @@ dirgroup {
         ":trusty_dirgroup_external_rust_crates_num-integer",
         ":trusty_dirgroup_external_rust_crates_num-traits",
         ":trusty_dirgroup_external_rust_crates_once_cell",
+        ":trusty_dirgroup_external_rust_crates_open-enum",
         ":trusty_dirgroup_external_rust_crates_openssl",
         ":trusty_dirgroup_external_rust_crates_openssl-macros",
         ":trusty_dirgroup_external_rust_crates_pkcs1",
