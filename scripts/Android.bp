@@ -37,6 +37,7 @@ dirgroup {
         ":trusty_dirgroup_external_rust_crates_async-trait",
         ":trusty_dirgroup_external_rust_crates_bit_field",
         ":trusty_dirgroup_external_rust_crates_bitflags",
+        ":trusty_dirgroup_external_rust_crates_buddy_system_allocator",
         ":trusty_dirgroup_external_rust_crates_byteorder",
         ":trusty_dirgroup_external_rust_crates_cfg-if",
         ":trusty_dirgroup_external_rust_crates_ciborium",
