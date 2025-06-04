@@ -104,6 +104,7 @@ dirgroup {
         ":trusty_dirgroup_frameworks_hardware_interfaces",
         ":trusty_dirgroup_frameworks_native",
         ":trusty_dirgroup_hardware_interfaces_security_see",
+        ":trusty_dirgroup_hardware_interfaces_security_sharedsecret",
         ":trusty_dirgroup_hardware_interfaces_staging_security_see",
         ":trusty_dirgroup_hardware_libhardware",
         ":trusty_dirgroup_packages_modules_virtualization_libs_dice_sample_inputs",
