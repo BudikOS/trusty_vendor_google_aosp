@@ -39,7 +39,7 @@ if [ -z ${TRUSTY_BUILD_RUST_VERSION} ]; then
 fi
 export TRUSTY_TOP=$(gettop)
 # b/432074538: clang-r547379's linker often crashes while linking Hafnium
-if [[ ${TRUSTY_BUILD_CLANG_VERSION} == clang-r547379 ]]; then
+if [ "${TRUSTY_BUILD_CLANG_VERSION}" = "clang-r547379" ]; then
     HAFNIUM_BUILD_CLANG_VERSION=clang-r563880
     export HAFNIUM_CLANG_BINDIR=${TRUSTY_TOP}/prebuilts/clang/host/linux-x86/${HAFNIUM_BUILD_CLANG_VERSION}/bin
 fi
