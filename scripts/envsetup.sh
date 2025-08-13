@@ -29,13 +29,13 @@ gettop() {
 }
 
 if [ -z ${TRUSTY_BUILD_CLANG_VERSION} ]; then
-    # NOTE: clang-r547379 reports clang version 20.0.0 whereas Rust 1.85.1 was
-    # built with LLVM version: 19.1.7 but the two releases are close in time and
+    # NOTE: clang-r563880 reports clang version 21.0.0 whereas Rust 1.87.0 was
+    # built with LLVM version: 20.1.1 but the two releases are close in time and
     # thus expected to be compatible.
-    TRUSTY_BUILD_CLANG_VERSION=clang-r547379
+    TRUSTY_BUILD_CLANG_VERSION=clang-r563880
 fi
 if [ -z ${TRUSTY_BUILD_RUST_VERSION} ]; then
-    TRUSTY_BUILD_RUST_VERSION=1.85.1
+    TRUSTY_BUILD_RUST_VERSION=1.87.0
 fi
 export TRUSTY_TOP=$(gettop)
 # b/432074538: clang-r547379's linker often crashes while linking Hafnium
