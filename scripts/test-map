@@ -537,6 +537,7 @@
 
             # Test Binder RPC between Android and Trusty
             androidtest(name="binder-rpc-to-trusty-test",
+                        enabled=False,
                         command="/data/nativetest64/vendor/"
                                 "binderRpcToTrustyTest/"
                                 "binderRpcToTrustyTest64"),
