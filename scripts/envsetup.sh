@@ -35,7 +35,7 @@ if [ -z ${TRUSTY_BUILD_CLANG_VERSION} ]; then
     TRUSTY_BUILD_CLANG_VERSION=clang-r563880
 fi
 if [ -z ${TRUSTY_BUILD_RUST_VERSION} ]; then
-    TRUSTY_BUILD_RUST_VERSION=1.87.0
+    TRUSTY_BUILD_RUST_VERSION=1.88.0
 fi
 export TRUSTY_TOP=$(gettop)
 # b/432074538: clang-r547379's linker often crashes while linking Hafnium
