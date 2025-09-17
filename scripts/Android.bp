@@ -319,6 +319,17 @@ genrule {
 }
 
 genrule {
+    name: "trusty_desktop_vm_arm64_ext_boot.bin",
+    defaults: [
+        "trusty_aosp.gen.defaults",
+    ],
+    out: [
+        "trusty_desktop_vm_arm64_ext_boot.bin",
+    ],
+    cmd: "PROJECT_NAME=desktop-arm64_ext_boot; OUT_EXT=bin;" + genrule_cmd_template,
+}
+
+genrule {
     name: "trusty_desktop_test_vm_arm64.bin",
     defaults: [
         "trusty_aosp.gen.defaults",
@@ -338,6 +349,17 @@ genrule {
         "trusty_desktop_vm_x86_64.bin",
     ],
     cmd: "PROJECT_NAME=desktop-x86_64; OUT_EXT=bin;" + genrule_cmd_template,
+}
+
+genrule {
+    name: "trusty_desktop_vm_x86_64_ext_boot.bin",
+    defaults: [
+        "trusty_aosp.gen.defaults",
+    ],
+    out: [
+        "trusty_desktop_vm_x86_64_ext_boot.bin",
+    ],
+    cmd: "PROJECT_NAME=desktop-x86_64_ext_boot; OUT_EXT=bin;" + genrule_cmd_template,
 }
 
 genrule {
