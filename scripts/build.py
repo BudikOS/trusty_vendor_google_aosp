@@ -33,6 +33,7 @@ import shutil
 import stat
 import subprocess
 import sys
+import tempfile
 from zipfile import ZipFile, ZipInfo, ZIP_DEFLATED
 
 import run_tests
@@ -339,7 +340,7 @@ def build(args):
             cmd = f"export LOG_POSTPROCESSING=1; {cmd:s}"
 
             with (
-                open(project + ".log", "wt", encoding="utf-8") as log_file,
+                tempfile.TemporaryFile("wt", encoding="utf-8") as log_file,
                 LogEngine(log_file) as log_engine,
             ):
                 status = subprocess.call(

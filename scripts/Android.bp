@@ -58,6 +58,7 @@ dirgroup {
         ":trusty_dirgroup_external_rust_crates_itertools",
         ":trusty_dirgroup_external_rust_crates_lazy_static",
         ":trusty_dirgroup_external_rust_crates_libc",
+        ":trusty_dirgroup_external_rust_crates_lock_api",
         ":trusty_dirgroup_external_rust_crates_log",
         ":trusty_dirgroup_external_rust_crates_num-derive",
         ":trusty_dirgroup_external_rust_crates_num-integer",
@@ -68,12 +69,14 @@ dirgroup {
         ":trusty_dirgroup_external_rust_crates_openssl",
         ":trusty_dirgroup_external_rust_crates_openssl-macros",
         ":trusty_dirgroup_external_rust_crates_paste",
+        ":trusty_dirgroup_external_rust_crates_pci_types",
         ":trusty_dirgroup_external_rust_crates_pkcs1",
         ":trusty_dirgroup_external_rust_crates_pkcs8",
         ":trusty_dirgroup_external_rust_crates_proc-macro2",
         ":trusty_dirgroup_external_rust_crates_protobuf",
         ":trusty_dirgroup_external_rust_crates_protobuf-support",
         ":trusty_dirgroup_external_rust_crates_quote",
+        ":trusty_dirgroup_external_rust_crates_scopeguard",
         ":trusty_dirgroup_external_rust_crates_sec1",
         ":trusty_dirgroup_external_rust_crates_serde",
         ":trusty_dirgroup_external_rust_crates_serde_derive",
@@ -103,7 +106,11 @@ dirgroup {
         ":trusty_dirgroup_external_trusty_musl",
         ":trusty_dirgroup_frameworks_hardware_interfaces",
         ":trusty_dirgroup_frameworks_native",
+        ":trusty_dirgroup_hardware_interfaces_gatekeeper_aidl",
+        ":trusty_dirgroup_hardware_interfaces_security_keymint_aidl",
         ":trusty_dirgroup_hardware_interfaces_security_see",
+        ":trusty_dirgroup_hardware_interfaces_security_secureclock_aidl",
+        ":trusty_dirgroup_hardware_interfaces_security_sharedsecret",
         ":trusty_dirgroup_hardware_interfaces_staging_security_see",
         ":trusty_dirgroup_hardware_libhardware",
         ":trusty_dirgroup_packages_modules_virtualization_libs_dice_sample_inputs",
@@ -312,6 +319,17 @@ genrule {
 }
 
 genrule {
+    name: "trusty_desktop_vm_arm64_ext_boot.bin",
+    defaults: [
+        "trusty_aosp.gen.defaults",
+    ],
+    out: [
+        "trusty_desktop_vm_arm64_ext_boot.bin",
+    ],
+    cmd: "PROJECT_NAME=desktop-arm64_ext_boot; OUT_EXT=bin;" + genrule_cmd_template,
+}
+
+genrule {
     name: "trusty_desktop_test_vm_arm64.bin",
     defaults: [
         "trusty_aosp.gen.defaults",
@@ -331,6 +349,17 @@ genrule {
         "trusty_desktop_vm_x86_64.bin",
     ],
     cmd: "PROJECT_NAME=desktop-x86_64; OUT_EXT=bin;" + genrule_cmd_template,
+}
+
+genrule {
+    name: "trusty_desktop_vm_x86_64_ext_boot.bin",
+    defaults: [
+        "trusty_aosp.gen.defaults",
+    ],
+    out: [
+        "trusty_desktop_vm_x86_64_ext_boot.bin",
+    ],
+    cmd: "PROJECT_NAME=desktop-x86_64_ext_boot; OUT_EXT=bin;" + genrule_cmd_template,
 }
 
 genrule {
