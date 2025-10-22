@@ -53,6 +53,7 @@ dirgroup {
         ":trusty_dirgroup_external_rust_crates_flagset",
         ":trusty_dirgroup_external_rust_crates_foreign-types",
         ":trusty_dirgroup_external_rust_crates_foreign-types-shared",
+        ":trusty_dirgroup_external_rust_crates_fragile",
         ":trusty_dirgroup_external_rust_crates_half",
         ":trusty_dirgroup_external_rust_crates_hex",
         ":trusty_dirgroup_external_rust_crates_itertools",
