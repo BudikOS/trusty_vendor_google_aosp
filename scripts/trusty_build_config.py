@@ -140,6 +140,11 @@ class TrustyAndroidTest(TrustyTest):
         self.need.set(**need)
         return self
 
+    def into_androidporttest(self, **_):
+        """Allows Android tests to be used inside a androidporttests block."""
+        return self
+
+
 class TrustyHostcommandTest(TrustyTest):
     """Stores a test name and command to run on the host.
 
