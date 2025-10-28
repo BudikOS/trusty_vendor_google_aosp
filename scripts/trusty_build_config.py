@@ -266,6 +266,8 @@ class TrustyRebootCommand(TrustyCommand):
     def __init__(
             self, mode: RebootMode = RebootMode.FACTORY_RESET, *,
             androidbootproperties: Optional[list[AndroidBootProperty]] = None):
+        if not isinstance(mode, RebootMode):
+            raise TypeError("mode must be a RebootMode instance")
         if androidbootproperties is not None:
             if not isinstance(androidbootproperties, list):
                 raise TypeError("androidbootproperties must be a list")
