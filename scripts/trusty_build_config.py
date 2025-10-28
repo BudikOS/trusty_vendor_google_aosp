@@ -257,6 +257,13 @@ class AndroidBootPropertyBase(str):
 
 class AndroidBootProperty():
     """Android boot property collection class."""
+    class MockBootCtrl():
+        class UpdateToSlot(AndroidBootPropertyBase):
+            """Mock boot control property to update to a slot."""
+            def __new__(cls, slot: int):
+                assert slot in (0, 1), f"slot must be 0 or 1, not {slot}"
+                return super().__new__(cls, "androidboot.vendor.mock_boot_ctrl"
+                                       f".update_to_slot={int(slot)}")
 
 
 class TrustyRebootCommand(TrustyCommand):
