@@ -21,6 +21,7 @@ python_binary_host {
 dirgroup {
     name: "trusty_aosp_dirgroups",
     dirs: [
+        "//device/generic/trusty:trusty_dirgroup_device_generic_trusty",
         ":trusty_dirgroup_external_boringssl",
         ":trusty_dirgroup_external_dtc",
         ":trusty_dirgroup_external_freetype",
@@ -287,6 +288,23 @@ genrule {
 }
 
 genrule {
+    name: "trusty_memshare_vm_arm64.bin",
+    defaults: [
+        "trusty_aosp.gen.defaults",
+    ],
+    out: [
+        "trusty_memshare_vm_arm64.bin",
+    ],
+    // IMPORTANT: OUT_EXT=bin for arm64
+    // the raw binary (not the elf) is needed for the avb signature process
+    cmd: "PROJECT_NAME=vm-arm64-memshare" + select(soong_config_variable("trusty_system_vm", "buildtype"), {
+        "userdebug": "-userdebug",
+        "eng": "-userdebug",
+        default: "-user",
+    }) + "; OUT_EXT=bin;" + genrule_cmd_template,
+}
+
+genrule {
     name: "trusty_security_vm_x86_64.elf",
     defaults: [
         "trusty_aosp.gen.defaults",
@@ -432,6 +450,27 @@ prebuilt_etc {
             src: ":trusty_security_vm_x86_64.elf",
             filename: "trusty_security_vm_unsigned.elf",
         },
+    },
+}
+
+prebuilt_etc {
+    name: "trusty_memshare_vm_unsigned",
+    enabled: select((os(), arch(), soong_config_variable("trusty_system_vm", "enabled")), {
+        ("android", "arm64", true): true,
+        ("android", "x86_64", true): false,
+        (default, default, default): false,
+    }),
+    relative_install_path: "vm/trusty_vm",
+    vendor: true,
+    arch: {
+        arm64: {
+            src: ":trusty_memshare_vm_arm64.bin",
+            filename: "trusty_memshare_vm_unsigned.bin",
+        },
+        /*x86_64: {
+            src: ":trusty_security_vm_x86_64.elf",
+            filename: "trusty_memshare_vm_unsigned.elf",
+        },*/
     },
 }
 
