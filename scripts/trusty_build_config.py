@@ -140,6 +140,11 @@ class TrustyAndroidTest(TrustyTest):
         self.need.set(**need)
         return self
 
+    def into_androidporttest(self, **_):
+        """Allows Android tests to be used inside a androidporttests block."""
+        return self
+
+
 class TrustyHostcommandTest(TrustyTest):
     """Stores a test name and command to run on the host.
 
@@ -251,13 +256,47 @@ class RebootMode(StrEnum):
                 return True
 
 
+class AndroidBootPropertyBase(str):
+    """Base class for Android boot properties."""
+
+
+class AndroidBootProperty():
+    """Android boot property collection class."""
+    class MockBootCtrl():
+        class UpdateToSlot(AndroidBootPropertyBase):
+            """Mock boot control property to update to a slot."""
+            def __new__(cls, slot: int):
+                assert slot in (0, 1), f"slot must be 0 or 1, not {slot}"
+                return super().__new__(cls, "androidboot.vendor.mock_boot_ctrl"
+                                       f".update_to_slot={int(slot)}")
+
+
 class TrustyRebootCommand(TrustyCommand):
     """Marker object which causes the test environment to be rebooted before the
        next test is run. Used to reset the test environment and to test storage.
     """
-    def __init__(self, mode: RebootMode = RebootMode.FACTORY_RESET):
+    def __init__(
+            self, mode: RebootMode = RebootMode.FACTORY_RESET, *,
+            androidbootproperties: Optional[list[AndroidBootProperty]] = None):
+        if not isinstance(mode, RebootMode):
+            raise TypeError("mode must be a RebootMode instance")
+        if androidbootproperties is not None:
+            if not isinstance(androidbootproperties, list):
+                raise TypeError("androidbootproperties must be a list")
+            for prop in androidbootproperties:
+                if not issubclass(type(prop), AndroidBootPropertyBase):
+                    raise TypeError(
+                        "Items in androidbootproperties must be instances of "
+                        "AndroidBootProperty subtypes"
+                    )
         super().__init__(mode)
         self.mode = mode
+        self.androidbootproperties = androidbootproperties
+
+    def extra_linux_args(self) -> list[str]:
+        if self.androidbootproperties is None:
+            return []
+        return [str(arg) for arg in self.androidbootproperties]
 
 class TrustyPrintCommand(TrustyCommand):
 
@@ -467,6 +506,7 @@ class TrustyBuildConfig(object):
             "needs": needs,
             "reboot": TrustyRebootCommand,
             "RebootMode": RebootMode,
+            "AndroidBootProperty": AndroidBootProperty,
             "devsigningkeys": devsigningkeys,
             "print": TrustyPrintCommand,
             "docs": docs,

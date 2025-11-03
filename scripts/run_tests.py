@@ -333,6 +333,7 @@ def run_tests(
     test_results = TestResults(project)
     test_env = None
     test_runner = None
+    extra_linux_args: list[str] = []
 
     if not qemu_instance_id:
         qemu_instance_id = "default"
@@ -384,7 +385,7 @@ def run_tests(
             The results of running this test, or None for non-tests, like
             reboots or tests that don't work in this environment.
         """
-        nonlocal test_env, test_runner
+        nonlocal extra_linux_args, test_env, test_runner
         cmd = test.command[1:]
         disable_rpmb = True if "--disable_rpmb" in cmd else None
 
@@ -437,6 +438,7 @@ def run_tests(
                                 disable_rpmb=disable_rpmb,
                                 verbose=verbose,
                                 debug_on_error=debug_on_error,
+                                extra_linux_args=extra_linux_args,
                             )
                         cmd_status = test_env.run_test(test_runner, cmd)
                         result = TestResult(test.name, cmd_status, False)
@@ -444,7 +446,17 @@ def run_tests(
                         return TestResult(test.name, None, False)
             case TrustyRebootCommand() if parent_test:
                 assert isinstance(parent_test, TrustyCompositeTest)
+                extra_linux_args = test.extra_linux_args()
                 if test_env:
+                    # Note that since the mode evaluated as part of the shutdown
+                    # of the previous runner instead of the new one, the mode
+                    # will be ignored if there is no existing test_env and
+                    # runner. This means that while a composite test can start
+                    # with a reboot command, e.g. so it can request
+                    # extra_linux_args, requesting a non-default mode is not
+                    # currently supported as it will lead to inconsistent
+                    # behavior between indivial test runs and runs where other
+                    # tests have been run before.
                     test_env.shutdown(test_runner, test.mode.factory_reset(),
                                       full_wipe=test.mode.full_wipe())
                     test_runner = None
