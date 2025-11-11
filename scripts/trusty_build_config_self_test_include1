@@ -53,7 +53,7 @@
                 compositetest(
                     name="self_test.composite.a",
                     sequence=[
-                        porttest("self_test.a.4").needs(storage_boot=True),
+                        porttest("self_test.a.4").needs(storage_boot=True, storage_full=False),
                         reboot(),
                     ],
                 ),
