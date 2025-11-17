@@ -24,8 +24,9 @@
 import argparse
 import os
 import re
+import warnings
 from enum import StrEnum, auto
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Self
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -53,28 +54,48 @@ class TrustyBuildConfigProject(object):
 
 
 class TrustyPortTestFlags(object):
-    """Stores need flags for a test or provide flags for a test environment."""
+    """ Represents an environment's feature flags.
+
+    There are two use cases:
+      * For an environment to specify what features it provides. Setting a flag
+        to True means that the environment has the corresponding feature.
+        Setting to False or not setting any value for a flag means that the
+        corresponding feature is not supported.
+      * For a test to specify which features it requires from its environment.
+        Setting a flag to True means the test needs the correspoinding feature
+        to run, setting to False means the test depends on the _absence_ of that
+        feature, and not setting any value means the test does not care about
+        that feature and can run whether or not the environment provides it.
+    """
 
     ALLOWED_FLAGS = {"android", "storage_boot", "storage_full",
                      "smp4", "abl", "tablet"}
 
-    def __init__(self, **flags):
-        self.flags = set()
+    def __init__(self, **flags: bool) -> None:
+        self.flags: dict[str, bool] = {}
         self.set(**flags)
 
-    def set(self, **flags):
+    def set(self, **flags: bool) -> None:
         """Set flags."""
         for name, arg in flags.items():
-            if name in self.ALLOWED_FLAGS:
-                if arg:
-                    self.flags.add(name)
-                else:
-                    self.flags.discard(name)
-            else:
-                raise TypeError("Unexpected flag: " + name)
+            if name not in self.ALLOWED_FLAGS:
+                raise TypeError(f"Unexpected flag: {name}")
 
-    def match_provide(self, provide):
-        return self.flags.issubset(provide.flags)
+            if self.flags.get(name, arg) != arg:
+                warnings.warn(
+                    f"Overwritting value for {name}: was {self.flags[name]},"
+                    f" now {arg}"
+                )
+
+            self.flags[name] = arg
+
+    def match_provide(self, provide: Self) -> bool:
+        for name, arg in self.flags.items():
+            if arg != provide.flags.get(name, False):
+                # If the test requires a feature that's not provided, or
+                # requires the absence of a feature that is provided, no match.
+                return False
+        return True
 
 
 class TrustyArchiveBuildFile(object):
@@ -311,10 +332,9 @@ class TrustyCompositeTest(TrustyTest):
                  enabled=True):
         super().__init__(name, [], enabled)
         self.sequence = sequence
-        flags = set()
+        self.need = TrustyPortTestFlags()
         for subtest in sequence:
-            flags.update(subtest.need.flags)
-        self.need = TrustyPortTestFlags(**{flag: True for flag in flags})
+            self.need.set(**subtest.need.flags)
 
     def needs(self, **need):
         self.need.set(**need)
@@ -733,9 +753,10 @@ def test_config(args):
         for i, test in enumerate(project.tests):
             match test:
                 case TrustyCompositeTest():
-                    # because one of its subtest needs storage_boot,
-                    # the composite test should similarly need it
-                    assert "storage_boot" in test.need.flags
+                    # because one of its subtest needs storage_boot and not
+                    # storage_full, the composite test should need the same
+                    assert test.need.flags.get("storage_boot", False)
+                    assert not test.need.flags.get("storage_full", True)
                     for subtest in test.sequence:
                         check_subtest(i, subtest)
                 case _:

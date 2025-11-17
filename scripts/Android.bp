@@ -206,8 +206,7 @@ genrule {
     ],
     // IMPORTANT: OUT_EXT=bin for arm64
     // the raw binary (not the elf) is needed for the avb signature process
-    // b/390206831 remove -placeholder-trusted-hal when VM2TZ is up
-    cmd: "PROJECT_NAME=vm-arm64-test-placeholder-trusted-hal" +
+    cmd: "PROJECT_NAME=vm-arm64-test" +
         select(soong_config_variable("trusty_system_vm", "buildtype"), {
             "userdebug": "-userdebug",
             "eng": "-userdebug",
@@ -225,8 +224,7 @@ genrule {
     ],
     // IMPORTANT: OUT_EXT=elf for x86_64
     // x86_64 VM payloads are not yet signed; crosvm consumes the elf
-    // b/390206831 remove -placeholder-trusted-hal when VM2TZ is up
-    cmd: "PROJECT_NAME=vm-x86_64-test-placeholder-trusted-hal" +
+    cmd: "PROJECT_NAME=vm-x86_64-test" +
         select(soong_config_variable("trusty_system_vm", "buildtype"), {
             "userdebug": "-userdebug",
             "eng": "-userdebug",

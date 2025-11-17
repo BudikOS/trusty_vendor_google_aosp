@@ -129,7 +129,7 @@ class TestResults(object):
         out.write(
             "\n"
             f"There were {test_count} defined for project {self.project}.\n"
-            f"{test_attempted} ran and {self.skipped_count} were skipped."
+            f"{test_attempted} ran and {self.skipped_count} were skipped.\n"
         )
         if test_count:
             for result in self.test_results:
