@@ -81,6 +81,7 @@ dirgroup {
         ":trusty_dirgroup_external_rust_crates_scopeguard",
         ":trusty_dirgroup_external_rust_crates_sec1",
         ":trusty_dirgroup_external_rust_crates_serde",
+        ":trusty_dirgroup_external_rust_crates_serde_core",
         ":trusty_dirgroup_external_rust_crates_serde_derive",
         ":trusty_dirgroup_external_rust_crates_smccc",
         ":trusty_dirgroup_external_rust_crates_spin",
