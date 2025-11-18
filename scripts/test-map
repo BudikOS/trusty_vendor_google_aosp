@@ -536,10 +536,6 @@
                                 "*/NewKeyGenerationTest.EcdsaAttestationUniqueId*:"
                                 "*/NewKeyGenerationTest.EcdsaAttestationTagNoApplicationId*:"
                                 "*/NewKeyGenerationTest.AttestationApplicationIDLengthProperlyEncoded*:"
-                                # TODO(b/395069628): Remove once keymint has enough memory for MlDsa
-                                "*/MlDsaTest.*:"
-                                "*/KeyBlobUpgradeTest.*:"
-                                # TODO(b/395069628): End to remove.
                                 "*/BootloaderStateTest.VbStateIsUnverified*:"
                                 "*/BootloaderStateTest.VbmetaDigest*:"
                                 "*InstanceTest.AidlVersionInFeature*:"
