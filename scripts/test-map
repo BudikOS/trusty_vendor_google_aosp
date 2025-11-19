@@ -536,11 +536,6 @@
                                 "*/NewKeyGenerationTest.EcdsaAttestationUniqueId*:"
                                 "*/NewKeyGenerationTest.EcdsaAttestationTagNoApplicationId*:"
                                 "*/NewKeyGenerationTest.AttestationApplicationIDLengthProperlyEncoded*:"
-                                # TODO(b/458787546): Remove once fixed.
-                                "*/BootloaderStateTest.BootloaderIsUnlocked*:"
-                                "*/MlDsaTest.AttestToEcdsaKey*:"
-                                "*/MlDsaTest.GenerateWithAttestation*:"
-                                # TODO(b/458787546): End to remove.
                                 # TODO(b/395069628): Remove once keymint has enough memory for MlDsa
                                 "*/MlDsaTest.*:"
                                 "*/KeyBlobUpgradeTest.*:"
