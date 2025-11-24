@@ -450,11 +450,7 @@
             # TODO(b/235265072): re-enable once Android changes propagate to
             # Trusty repo.
             #androidtest(name="vts:rkp",
-            #            command="if [ \"`getprop ro.boot.verifiedbootstate`\" != \"fake\" ]; then "
-            #                    "setprop ro.boot.verifiedbootstate fake; "
-            #                    "fi "
-            #                    "&&"
-            #                    "/data/nativetest64/"
+            #            command="/data/nativetest64/"
             #                    "VtsHalRemotelyProvisionedComponentTargetTest/"
             #                    "VtsHalRemotelyProvisionedComponentTargetTest"
             #                    " --gtest_filter=\""
@@ -485,10 +481,6 @@
                                 "/vendor/etc/"
                                 "keymaster_soft_wrapped_attestation_keys.xml"
                                 "&&"
-                                "if [ \"`getprop ro.boot.verifiedbootstate`\" != \"fake\" ]; then "
-                                "setprop ro.boot.verifiedbootstate fake; "
-                                "fi "
-                                "&&"
                                 "/data/nativetest64/"
                                 "VtsAidlKeyMintTargetTest/"
                                 "VtsAidlKeyMintTargetTest"
@@ -517,11 +509,7 @@
             # TODO(b/208872187): Remove --skip_boot_pl_check once we have boot
             # patchlevel configured.
             androidtest(name="vts:keymint",
-                        command="if [ \"`getprop ro.boot.verifiedbootstate`\" != \"fake\" ]; then "
-                                "setprop ro.boot.verifiedbootstate fake; "
-                                "fi "
-                                "&&"
-                                "/data/nativetest64/"
+                        command="/data/nativetest64/"
                                 "VtsAidlKeyMintTargetTest/"
                                 "VtsAidlKeyMintTargetTest"
                                 " --skip_boot_pl_check"
@@ -548,11 +536,6 @@
                                 "*/NewKeyGenerationTest.EcdsaAttestationUniqueId*:"
                                 "*/NewKeyGenerationTest.EcdsaAttestationTagNoApplicationId*:"
                                 "*/NewKeyGenerationTest.AttestationApplicationIDLengthProperlyEncoded*:"
-                                # TODO(b/458787546): Remove once fixed.
-                                "*/BootloaderStateTest.BootloaderIsUnlocked*:"
-                                "*/MlDsaTest.AttestToEcdsaKey*:"
-                                "*/MlDsaTest.GenerateWithAttestation*:"
-                                # TODO(b/458787546): End to remove.
                                 # TODO(b/395069628): Remove once keymint has enough memory for MlDsa
                                 "*/MlDsaTest.*:"
                                 "*/KeyBlobUpgradeTest.*:"
