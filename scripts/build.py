@@ -790,7 +790,12 @@ def main(default_config=None, emulator=True):
     os.chdir(top)
 
     if not args.build_root:
-        args.build_root = os.path.join(top, "build-root")
+        if os.path.abspath(top).startswith("/google/cog"):
+            # Cogfs is not meant to store build artifacts. Piggy-back on the
+            # android out directory for build-root if we're running under cogfs.
+            args.build_root = os.path.join(top, "out", "build-root")
+        else:
+            args.build_root = os.path.join(top, "build-root")
 
     # Depending on trusty_build_config.py's default config path doesn't work on
     # the Soong-built python binary.
