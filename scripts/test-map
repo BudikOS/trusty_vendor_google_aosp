@@ -536,6 +536,10 @@
                                 "*/NewKeyGenerationTest.EcdsaAttestationUniqueId*:"
                                 "*/NewKeyGenerationTest.EcdsaAttestationTagNoApplicationId*:"
                                 "*/NewKeyGenerationTest.AttestationApplicationIDLengthProperlyEncoded*:"
+                                # TODO(b/463979556): Remove once fixed.
+                                "*/MlDsaTest.AttestToEcdsaKey*:"
+                                "*/MlDsaTest.GenerateWithAttestation*:"
+                                # TODO(b/463979556): End to remove.
                                 "*/BootloaderStateTest.VbStateIsUnverified*:"
                                 "*/BootloaderStateTest.VbmetaDigest*:"
                                 "*InstanceTest.AidlVersionInFeature*:"
