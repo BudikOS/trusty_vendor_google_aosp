@@ -34,6 +34,7 @@ dirgroup {
         ":trusty_dirgroup_external_python_markupsafe",
         ":trusty_dirgroup_external_python_six",
         ":trusty_dirgroup_external_rust_crates_acpi",
+        ":trusty_dirgroup_external_rust_crates_anyhow",
         ":trusty_dirgroup_external_rust_crates_arrayvec",
         ":trusty_dirgroup_external_rust_crates_async-trait",
         ":trusty_dirgroup_external_rust_crates_bit_field",
