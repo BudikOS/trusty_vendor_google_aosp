@@ -89,6 +89,17 @@ class TrustyPortTestFlags(object):
 
             self.flags[name] = arg
 
+    def set_provide(self, **flags: bool) -> None:
+        """Adjust provide flags. flag=True adds a flag, flag=False removes it."""
+        for name, arg in flags.items():
+            if name not in self.ALLOWED_FLAGS:
+                raise TypeError(f"Unexpected flag: {name}")
+
+            if arg:
+                self.flags[name] = arg
+            else:
+                self.flags.pop(name, None)
+
     def match_provide(self, provide: Self) -> bool:
         for name, arg in self.flags.items():
             if arg != provide.flags.get(name, False):
@@ -96,6 +107,24 @@ class TrustyPortTestFlags(object):
                 # requires the absence of a feature that is provided, no match.
                 return False
         return True
+
+    @classmethod
+    def boottestflags(cls, **flags: bool) -> Self:
+        provides: Self = cls(storage_boot=True,
+                             smp4=True)
+        provides.set_provide(**flags)
+        return provides
+
+    @classmethod
+    def androidtestflags(cls, **flags: bool) -> Self:
+        provides: Self = cls(android=True,
+                             storage_boot=True,
+                             storage_full=True,
+                             smp4=True,
+                             abl=True,
+                             tablet=True)
+        provides.set_provide(**flags)
+        return provides
 
 
 class TrustyArchiveBuildFile(object):
@@ -463,8 +492,7 @@ class TrustyBuildConfig(object):
 
         def boottests(port_tests, provides=None):
             if provides is None:
-                provides = TrustyPortTestFlags(storage_boot=True,
-                                               smp4=True)
+                provides = TrustyPortTestFlags.boottestflags()
             return [test.into_bootporttest()
                     for test in porttests_filter(port_tests, provides)]
 
@@ -474,12 +502,7 @@ class TrustyBuildConfig(object):
             # other into_androidtest ignore the nameprefix parameter
             nameprefix = nameprefix + "android-port-test:"
             if provides is None:
-                provides = TrustyPortTestFlags(android=True,
-                                               storage_boot=True,
-                                               storage_full=True,
-                                               smp4=True,
-                                               abl=True,
-                                               tablet=True)
+                provides = TrustyPortTestFlags.androidtestflags()
 
             return [test.into_androidtest(nameprefix=nameprefix,
                                               cmdargs=cmdargs,
@@ -520,6 +543,8 @@ class TrustyBuildConfig(object):
             "porttest": TrustyPortTest,
             "compositetest": TrustyCompositeTest,
             "porttestflags": TrustyPortTestFlags,
+            "androidtestflags": TrustyPortTestFlags.androidtestflags,
+            "boottestflags": TrustyPortTestFlags.boottestflags,
             "hosttests": hosttests,
             "boottests": boottests,
             "androidtest": TrustyAndroidTest,
