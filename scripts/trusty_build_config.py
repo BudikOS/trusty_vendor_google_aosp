@@ -161,8 +161,8 @@ class TrustyAndroidTest(TrustyTest):
         self.need.set(**need)
         return self
 
-    def into_androidporttest(self, **_):
-        """Allows Android tests to be used inside a androidporttests block."""
+    def into_androidtest(self, **_):
+        """Allows Android tests to be used inside a androidtests block."""
         return self
 
 
@@ -210,7 +210,7 @@ class TrustyPortTest(TrustyTest):
         self.need.set(**need)
         return self
 
-    def into_androidporttest(self, cmdargs, **kwargs):
+    def into_androidtest(self, cmdargs, **kwargs):
         cmdargs = list(cmdargs)
         cmd = " ".join(["/vendor/bin/trusty-ut-ctrl", self.port] + cmdargs)
         return TrustyAndroidTest(self.name, cmd, self.need, self.port_type,
@@ -238,7 +238,7 @@ class TrustyCommand:
         """Allows commands to be used inside a needs block."""
         return self
 
-    def into_androidporttest(self, **_):
+    def into_androidtest(self, **_):
         return self
 
     def into_bootporttest(self):
@@ -340,15 +340,15 @@ class TrustyCompositeTest(TrustyTest):
         self.need.set(**need)
         return self
 
-    def into_androidporttest(self, **kwargs):
+    def into_androidtest(self, **kwargs):
         # because the needs of the composite test is the union of the needs of
         # its subtests, we do not need to filter out any subtests; all needs met
-        self.sequence = [subtest.into_androidporttest(**kwargs)
+        self.sequence = [subtest.into_androidtest(**kwargs)
                          for subtest in self.sequence]
         return self
 
     def into_bootporttest(self):
-        # similarly to into_androidporttest, we do not need to filter out tests
+        # similarly to into_androidtest, we do not need to filter out tests
         self.sequence = [subtest.into_bootporttest()
                          for subtest in self.sequence]
         return self
@@ -468,8 +468,10 @@ class TrustyBuildConfig(object):
             return [test.into_bootporttest()
                     for test in porttests_filter(port_tests, provides)]
 
-        def androidporttests(port_tests, provides=None, nameprefix="",
-                             cmdargs=(), runargs=()):
+        def androidtests(port_tests, provides=None, nameprefix="",
+                         cmdargs=(), runargs=()):
+            # nameprefix is only used by TrustyPortTest.into_androidtest,
+            # other into_androidtest ignore the nameprefix parameter
             nameprefix = nameprefix + "android-port-test:"
             if provides is None:
                 provides = TrustyPortTestFlags(android=True,
@@ -479,7 +481,7 @@ class TrustyBuildConfig(object):
                                                abl=True,
                                                tablet=True)
 
-            return [test.into_androidporttest(nameprefix=nameprefix,
+            return [test.into_androidtest(nameprefix=nameprefix,
                                               cmdargs=cmdargs,
                                               runargs=runargs)
                     for test in porttests_filter(port_tests, provides)]
@@ -522,7 +524,8 @@ class TrustyBuildConfig(object):
             "boottests": boottests,
             "androidtest": TrustyAndroidTest,
             "hostcommandtest": TrustyHostcommandTest,
-            "androidporttests": androidporttests,
+            "androidtests": androidtests,
+            "androidporttests": androidtests,
             "needs": needs,
             "reboot": TrustyRebootCommand,
             "RebootMode": RebootMode,
