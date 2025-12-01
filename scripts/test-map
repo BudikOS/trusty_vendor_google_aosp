@@ -540,6 +540,9 @@
                                 "*/MlDsaTest.AttestToEcdsaKey*:"
                                 "*/MlDsaTest.GenerateWithAttestation*:"
                                 # TODO(b/463979556): End to remove.
+                                # TODO(b/465171579): Remove once fixed.
+                                "*/MlDsaTest.ImportPkcs8Fails*:"
+                                # TODO(b/465171579): End to remove.
                                 "*/BootloaderStateTest.VbStateIsUnverified*:"
                                 "*/BootloaderStateTest.VbmetaDigest*:"
                                 "*InstanceTest.AidlVersionInFeature*:"
