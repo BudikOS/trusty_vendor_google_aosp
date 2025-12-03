@@ -134,6 +134,7 @@ dirgroup {
         ":trusty_dirgroup_system_libbase",
         ":trusty_dirgroup_system_libcppbor",
         ":trusty_dirgroup_system_secretkeeper",
+        ":trusty_dirgroup_system_security",
         ":trusty_dirgroup_system_see_authmgr",
         ":trusty_dirgroup_system_teeui",
         ":trusty_dirgroup_system_tools_aidl",
