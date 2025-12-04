@@ -108,7 +108,6 @@
             "qemu-generic-arm64-gicv3-spd-ffa-test-debug",
             "qemu-generic-arm64-gicv3-spd-noffa-test-debug",
             "qemu-generic-arm64-gicv3-test-debug",
-            "qemu-generic-arm64-test-debug",
             "qemu-generic-arm64u32-test-debug",
         ],
         tests=[
@@ -132,13 +131,41 @@
             "qemu-generic-arm64-gicv3-spd-ffa-test-debug",
             "qemu-generic-arm64-gicv3-spd-noffa-test-debug",
             "qemu-generic-arm64-gicv3-test-debug",
-            "qemu-generic-arm64-test-debug",
             "qemu-generic-arm64u32-test-debug",
         ],
         tests=[
             # Android shell port tests - same as above, but triggered with
             # Linux + android userspace present
             androidtests(include("./build-config-android-tests")),
+        ],
+    ),
+    testmap(
+        projects=[
+            "qemu-generic-arm64-test-debug",
+        ],
+        tests=[
+            # Boot tests (test-runner + kernel only)
+            boottests(
+                [
+                    include("trusty/kernel/build-config-kerneltests"),
+                    include("trusty/user/base/build-config-usertests"),
+                    include("trusty/user/app/sample/build-config-boottests"),
+                ],
+                provides=porttestflags(
+                    smp4=True,
+                ),
+            ),
+            androidtests(
+                include("./build-config-android-tests-without-hafnium")
+            ),
+            # Android shell port tests - same as above, but triggered with
+            # Linux + android userspace present
+            androidtests(
+                include("./build-config-android-tests"),
+                provides=androidtestflags(
+                    storage_tp=False,
+                ),
+            ),
         ],
     ),
 ]
