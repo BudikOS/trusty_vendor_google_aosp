@@ -245,7 +245,8 @@
                         ")"
                         "&&"
                         "/vendor/bin/trusty-ut-ctrl "
-                        "com.android.keymaster-unittest"),
+                        "com.android.keymaster-unittest"
+                ).needs(storage_boot=True),
 
     # Test that storage sessions behave correctly when proxy restarts
     androidtest(
@@ -261,7 +262,8 @@
                 "start storageproxyd"
                 "&&"
                 "/vendor/bin/trusty-ut-ctrl "
-                "com.android.storage-reconnect-test.tp.after "),
+                "com.android.storage-reconnect-test.tp.after "
+    ).needs(storage_tp=True),
     androidtest(
         name="com.android.storage-reconnect-test.td.reconnect",
         command="/vendor/bin/trusty-ut-ctrl "
@@ -275,7 +277,8 @@
                 "start storageproxyd"
                 "&&"
                 "/vendor/bin/trusty-ut-ctrl "
-                "com.android.storage-reconnect-test.td.after "),
+                "com.android.storage-reconnect-test.td.after "
+    ).needs(storage_full=True),
     androidtest(
         name="com.android.storage-reconnect-test.tdp.reconnect",
         command="/vendor/bin/trusty-ut-ctrl "
@@ -289,7 +292,8 @@
                 "start storageproxyd"
                 "&&"
                 "/vendor/bin/trusty-ut-ctrl "
-                "com.android.storage-reconnect-test.tdp.after "),
+                "com.android.storage-reconnect-test.tdp.after "
+    ).needs(storage_full=True),
 
     # Test confirmation UI
     androidtest(name="vts:confirmationui@1.0",
