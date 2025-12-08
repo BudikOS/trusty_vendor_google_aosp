@@ -68,7 +68,7 @@ class TrustyPortTestFlags(object):
         that feature and can run whether or not the environment provides it.
     """
 
-    ALLOWED_FLAGS = {"android", "storage_boot", "storage_full",
+    ALLOWED_FLAGS = {"android", "storage_boot", "storage_full", "storage_tp",
                      "smp4", "abl", "tablet"}
 
     def __init__(self, **flags: bool) -> None:
@@ -89,6 +89,17 @@ class TrustyPortTestFlags(object):
 
             self.flags[name] = arg
 
+    def set_provide(self, **flags: bool) -> None:
+        """Adjust provide flags. flag=True adds a flag, flag=False removes it."""
+        for name, arg in flags.items():
+            if name not in self.ALLOWED_FLAGS:
+                raise TypeError(f"Unexpected flag: {name}")
+
+            if arg:
+                self.flags[name] = arg
+            else:
+                self.flags.pop(name, None)
+
     def match_provide(self, provide: Self) -> bool:
         for name, arg in self.flags.items():
             if arg != provide.flags.get(name, False):
@@ -96,6 +107,26 @@ class TrustyPortTestFlags(object):
                 # requires the absence of a feature that is provided, no match.
                 return False
         return True
+
+    @classmethod
+    def boottestflags(cls, **flags: bool) -> Self:
+        provides: Self = cls(storage_boot=True,
+                             storage_tp=True,
+                             smp4=True)
+        provides.set_provide(**flags)
+        return provides
+
+    @classmethod
+    def androidtestflags(cls, **flags: bool) -> Self:
+        provides: Self = cls(android=True,
+                             storage_boot=True,
+                             storage_full=True,
+                             storage_tp=True,
+                             smp4=True,
+                             abl=True,
+                             tablet=True)
+        provides.set_provide(**flags)
+        return provides
 
 
 class TrustyArchiveBuildFile(object):
@@ -161,8 +192,8 @@ class TrustyAndroidTest(TrustyTest):
         self.need.set(**need)
         return self
 
-    def into_androidporttest(self, **_):
-        """Allows Android tests to be used inside a androidporttests block."""
+    def into_androidtest(self, **_):
+        """Allows Android tests to be used inside a androidtests block."""
         return self
 
 
@@ -210,7 +241,7 @@ class TrustyPortTest(TrustyTest):
         self.need.set(**need)
         return self
 
-    def into_androidporttest(self, cmdargs, **kwargs):
+    def into_androidtest(self, cmdargs, **kwargs):
         cmdargs = list(cmdargs)
         cmd = " ".join(["/vendor/bin/trusty-ut-ctrl", self.port] + cmdargs)
         return TrustyAndroidTest(self.name, cmd, self.need, self.port_type,
@@ -238,7 +269,7 @@ class TrustyCommand:
         """Allows commands to be used inside a needs block."""
         return self
 
-    def into_androidporttest(self, **_):
+    def into_androidtest(self, **_):
         return self
 
     def into_bootporttest(self):
@@ -340,15 +371,15 @@ class TrustyCompositeTest(TrustyTest):
         self.need.set(**need)
         return self
 
-    def into_androidporttest(self, **kwargs):
+    def into_androidtest(self, **kwargs):
         # because the needs of the composite test is the union of the needs of
         # its subtests, we do not need to filter out any subtests; all needs met
-        self.sequence = [subtest.into_androidporttest(**kwargs)
+        self.sequence = [subtest.into_androidtest(**kwargs)
                          for subtest in self.sequence]
         return self
 
     def into_bootporttest(self):
-        # similarly to into_androidporttest, we do not need to filter out tests
+        # similarly to into_androidtest, we do not need to filter out tests
         self.sequence = [subtest.into_bootporttest()
                          for subtest in self.sequence]
         return self
@@ -463,23 +494,19 @@ class TrustyBuildConfig(object):
 
         def boottests(port_tests, provides=None):
             if provides is None:
-                provides = TrustyPortTestFlags(storage_boot=True,
-                                               smp4=True)
+                provides = TrustyPortTestFlags.boottestflags()
             return [test.into_bootporttest()
                     for test in porttests_filter(port_tests, provides)]
 
-        def androidporttests(port_tests, provides=None, nameprefix="",
-                             cmdargs=(), runargs=()):
+        def androidtests(port_tests, provides=None, nameprefix="",
+                         cmdargs=(), runargs=()):
+            # nameprefix is only used by TrustyPortTest.into_androidtest,
+            # other into_androidtest ignore the nameprefix parameter
             nameprefix = nameprefix + "android-port-test:"
             if provides is None:
-                provides = TrustyPortTestFlags(android=True,
-                                               storage_boot=True,
-                                               storage_full=True,
-                                               smp4=True,
-                                               abl=True,
-                                               tablet=True)
+                provides = TrustyPortTestFlags.androidtestflags()
 
-            return [test.into_androidporttest(nameprefix=nameprefix,
+            return [test.into_androidtest(nameprefix=nameprefix,
                                               cmdargs=cmdargs,
                                               runargs=runargs)
                     for test in porttests_filter(port_tests, provides)]
@@ -518,11 +545,14 @@ class TrustyBuildConfig(object):
             "porttest": TrustyPortTest,
             "compositetest": TrustyCompositeTest,
             "porttestflags": TrustyPortTestFlags,
+            "androidtestflags": TrustyPortTestFlags.androidtestflags,
+            "boottestflags": TrustyPortTestFlags.boottestflags,
             "hosttests": hosttests,
             "boottests": boottests,
             "androidtest": TrustyAndroidTest,
             "hostcommandtest": TrustyHostcommandTest,
-            "androidporttests": androidporttests,
+            "androidtests": androidtests,
+            "androidporttests": androidtests,
             "needs": needs,
             "reboot": TrustyRebootCommand,
             "RebootMode": RebootMode,
