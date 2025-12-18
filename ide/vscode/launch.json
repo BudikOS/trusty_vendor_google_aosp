@@ -13,11 +13,13 @@
             "initCommands": [
                 "command script import ./build-root/build-qemu-generic-arm64-test-debug/lldb_support.py",
                 "initialize_kernel_lldb_module",
-                "breakpoint set -n trusty_thread_start -C trusty_thread_start_hook"
+                "breakpoint set -n trusty_thread_start",
+                "breakpoint command add --python-function lldb_support.trusty_thread_start_breakpoint_callback"
             ],
             "processCreateCommands": [
                 "gdb-remote 1234",
-                "breakpoint set -n relocate_kernel -C relocate_kernel_hook",
+                "breakpoint set -n relocate_kernel",
+                "breakpoint command add --python-function lldb_support.relocate_kernel_breakpoint_callback",
                 "c"
             ],
             "postDebugTask": "Send SIGINT to qemu.py"
