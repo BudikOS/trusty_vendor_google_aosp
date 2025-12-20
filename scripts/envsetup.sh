@@ -29,10 +29,10 @@ gettop() {
 }
 
 if [ -z ${TRUSTY_BUILD_CLANG_VERSION} ]; then
-    # NOTE: clang-r563880c reports clang version 21.0.0 whereas Rust 1.87.0 was
-    # built with LLVM version: 20.1.1 but the two releases are close in time and
+    # NOTE: clang-r574158 reports clang version 21.0.0 whereas Rust 1.90.0 was
+    # built with LLVM version: 20.1.8 but the two releases are close in time and
     # thus expected to be compatible.
-    TRUSTY_BUILD_CLANG_VERSION=clang-r563880c
+    TRUSTY_BUILD_CLANG_VERSION=clang-r574158
 fi
 if [ -z ${TRUSTY_BUILD_RUST_VERSION} ]; then
     TRUSTY_BUILD_RUST_VERSION=1.90.0
