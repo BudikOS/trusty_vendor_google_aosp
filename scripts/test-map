@@ -165,4 +165,20 @@
             ),
         ],
     ),
+
+    testmap(
+        projects=[
+            "qemu-desktop-arm64-test-debug",
+        ],
+        tests=[
+            androidtest(name="finger_guard_svc tests",
+                        command="/vendor/bin/trusty-ut-ctrl com.android.trusty.rust.finger_guard_svc.test"),
+            androidtest(name="gsc_svc tests",
+                        command="/vendor/bin/trusty-ut-ctrl com.android.trusty.rust.gsc_svc.test"),
+            androidtest(name="gsc_svc_client tests",
+                        command="/vendor/bin/trusty-ut-ctrl com.android.trusty.rust.gsc_svc_client.test"),
+            androidtest(name="pinweaver tests",
+                        command="/vendor/bin/trusty-ut-ctrl com.android.trusty.rust.pinweaver.test"),
+        ],
+    ),
 ]
