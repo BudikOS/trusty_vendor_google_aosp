@@ -587,7 +587,13 @@ def test_projects(
 def default_root() -> str:
     script_dir = os.path.dirname(os.path.abspath(__file__))
     top = os.path.abspath(os.path.join(script_dir, "../../../../.."))
-    return os.path.join(top, "build-root")
+
+    if os.path.abspath(top).startswith("/google/cog"):
+        # Cogfs is not meant to store build artifacts. Piggy-back on the
+        # android out directory for build-root if we're running under cogfs.
+        return os.path.join(top, "out", "build-root")
+    else:
+        return os.path.join(top, "build-root")
 
 
 def main():

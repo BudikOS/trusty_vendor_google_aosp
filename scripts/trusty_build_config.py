@@ -68,8 +68,8 @@ class TrustyPortTestFlags(object):
         that feature and can run whether or not the environment provides it.
     """
 
-    ALLOWED_FLAGS = {"android", "storage_boot", "storage_full", "storage_tp",
-                     "smp4", "abl", "tablet"}
+    ALLOWED_FLAGS = {"android", "storage_boot", "storage_full",
+                     "storage_staging", "storage_tp", "smp4", "abl", "tablet"}
 
     def __init__(self, **flags: bool) -> None:
         self.flags: dict[str, bool] = {}
