@@ -112,6 +112,7 @@ class TrustyPortTestFlags(object):
     def boottestflags(cls, **flags: bool) -> Self:
         provides: Self = cls(storage_boot=True,
                              storage_tp=True,
+                             storage_staging=True,
                              smp4=True)
         provides.set_provide(**flags)
         return provides
@@ -122,6 +123,7 @@ class TrustyPortTestFlags(object):
                              storage_boot=True,
                              storage_full=True,
                              storage_tp=True,
+                             storage_staging=True,
                              smp4=True,
                              abl=True,
                              tablet=True)

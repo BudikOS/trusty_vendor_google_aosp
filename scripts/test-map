@@ -148,8 +148,9 @@
                     include("trusty/user/base/build-config-usertests"),
                     include("trusty/user/app/sample/build-config-boottests"),
                 ],
-                provides=porttestflags(
-                    smp4=True,
+                provides=boottestflags(
+                    storage_tp=False,
+                    storage_boot=False,
                 ),
             ),
             androidtests(
@@ -161,6 +162,7 @@
                 include("./build-config-android-tests"),
                 provides=androidtestflags(
                     storage_tp=False,
+                    storage_staging=False,
                 ),
             ),
         ],
