@@ -191,7 +191,6 @@ genrule_defaults {
         "build_trusty",
         "trusty_metrics_atoms_protoc_plugin",
     ],
-    keep_gendir: true,
 }
 
 genrule_cmd_template = "(mkdir -p $(genDir)/build-root && " +
