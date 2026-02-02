@@ -200,7 +200,6 @@ genrule_cmd_template = "(mkdir -p $(genDir)/build-root && " +
     "PROTOC_PLUGIN_BINARY=$(location trusty_metrics_atoms_protoc_plugin) TRUSTY_SKIP_DOCS=true " +
     "BUILDDATE=\"$$(date --date=@$$(cat $(build_date_file)))\" " +
     "MICRODROID_KERNEL_HASHES_RS=\"$$MICRODROID_KERNEL_HASHES_RS\" " +
-    "PLATFORM_SECURITY_PATCH_TIMESTAMP_RS=\"$$PLATFORM_SECURITY_PATCH_TIMESTAMP_RS\" " +
     "$(location build_trusty) --script-dir trusty/vendor/google/aosp/scripts --buildid \"$$(cat $(build_number_file))\" --verbose $$PROJECT_NAME " +
     "--build-root $(genDir)/build-root 1>$(genDir)/stdout.log 2>$(genDir)/stderr.log || (" +
     "echo Trusty build FAILED; echo stdout:; cat $(genDir)/stdout.log; echo stderr:; cat $(genDir)/stderr.log; false)) && " +
@@ -347,7 +346,6 @@ cc_genrule {
     ],
     srcs: [
         ":microdroid_kernel_hashes_rs",
-        ":platform_security_patch_timestamp_rs",
     ],
     out: [
         "trusty_desktop_vm_arm64.bin",
@@ -355,8 +353,6 @@ cc_genrule {
     cmd: "PROJECT_NAME=desktop-arm64; OUT_EXT=bin;" +
         "MICRODROID_KERNEL_HASHES_RS=" +
         "$$(dirname $(locations :microdroid_kernel_hashes_rs));" +
-        "PLATFORM_SECURITY_PATCH_TIMESTAMP_RS=" +
-        "$$(dirname $(locations :platform_security_patch_timestamp_rs));" +
         genrule_cmd_template,
 }
 
@@ -373,7 +369,6 @@ cc_genrule {
     ],
     srcs: [
         ":microdroid_kernel_hashes_rs",
-        ":platform_security_patch_timestamp_rs",
     ],
     out: [
         "trusty_desktop_vm_arm64_ext_boot.bin",
@@ -381,8 +376,6 @@ cc_genrule {
     cmd: "PROJECT_NAME=desktop-arm64_ext_boot; OUT_EXT=bin;" +
         "MICRODROID_KERNEL_HASHES_RS=" +
         "$$(dirname $(locations :microdroid_kernel_hashes_rs));" +
-        "PLATFORM_SECURITY_PATCH_TIMESTAMP_RS=" +
-        "$$(dirname $(locations :platform_security_patch_timestamp_rs));" +
         genrule_cmd_template,
 }
 
@@ -399,7 +392,6 @@ cc_genrule {
     ],
     srcs: [
         ":microdroid_kernel_hashes_rs",
-        ":platform_security_patch_timestamp_rs",
     ],
     out: [
         "trusty_desktop_test_vm_arm64.bin",
@@ -407,8 +399,6 @@ cc_genrule {
     cmd: "PROJECT_NAME=desktop-arm64-test; OUT_EXT=bin;" +
         "MICRODROID_KERNEL_HASHES_RS=" +
         "$$(dirname $(locations :microdroid_kernel_hashes_rs));" +
-        "PLATFORM_SECURITY_PATCH_TIMESTAMP_RS=" +
-        "$$(dirname $(locations :platform_security_patch_timestamp_rs));" +
         genrule_cmd_template,
 }
 
@@ -425,7 +415,6 @@ cc_genrule {
     ],
     srcs: [
         ":microdroid_kernel_hashes_rs",
-        ":platform_security_patch_timestamp_rs",
     ],
     out: [
         "trusty_desktop_vm_x86_64.bin",
@@ -433,8 +422,6 @@ cc_genrule {
     cmd: "PROJECT_NAME=desktop-x86_64; OUT_EXT=bin;" +
         "MICRODROID_KERNEL_HASHES_RS=" +
         "$$(dirname $(locations :microdroid_kernel_hashes_rs));" +
-        "PLATFORM_SECURITY_PATCH_TIMESTAMP_RS=" +
-        "$$(dirname $(locations :platform_security_patch_timestamp_rs));" +
         genrule_cmd_template,
 }
 
@@ -451,7 +438,6 @@ cc_genrule {
     ],
     srcs: [
         ":microdroid_kernel_hashes_rs",
-        ":platform_security_patch_timestamp_rs",
     ],
     out: [
         "trusty_desktop_vm_x86_64_ext_boot.bin",
@@ -459,8 +445,6 @@ cc_genrule {
     cmd: "PROJECT_NAME=desktop-x86_64_ext_boot; OUT_EXT=bin;" +
         "MICRODROID_KERNEL_HASHES_RS=" +
         "$$(dirname $(locations :microdroid_kernel_hashes_rs));" +
-        "PLATFORM_SECURITY_PATCH_TIMESTAMP_RS=" +
-        "$$(dirname $(locations :platform_security_patch_timestamp_rs));" +
         genrule_cmd_template,
 }
 
@@ -477,7 +461,6 @@ cc_genrule {
     ],
     srcs: [
         ":microdroid_kernel_hashes_rs",
-        ":platform_security_patch_timestamp_rs",
     ],
     out: [
         "trusty_desktop_test_vm_x86_64.bin",
@@ -485,8 +468,6 @@ cc_genrule {
     cmd: "PROJECT_NAME=desktop-x86_64-test; OUT_EXT=bin;" +
         "MICRODROID_KERNEL_HASHES_RS=" +
         "$$(dirname $(locations :microdroid_kernel_hashes_rs));" +
-        "PLATFORM_SECURITY_PATCH_TIMESTAMP_RS=" +
-        "$$(dirname $(locations :platform_security_patch_timestamp_rs));" +
         genrule_cmd_template,
 }
 
