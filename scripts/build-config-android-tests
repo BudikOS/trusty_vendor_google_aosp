@@ -387,6 +387,10 @@
                         "*/AttestKeyTest.AlternateAttestKeyChaining*:"
                         "*/AttestKeyTest.AllEcCurves*:"
                         "*/AttestKeyTest.EcdsaAttestationID*:"
+                        # (b/480194313): DeviceIdAttestationDisabled depends on
+                        # the package_native service which is not available
+                        # in the qemu_trusty_arm64 android target.
+                        "*/NewKeyGenerationTest.DeviceIdAttestationDisabled*:"
                         "*/NewKeyGenerationTest.RsaWithAttestation*:"
                         "*/NewKeyGenerationTest.RsaEncryptionWithAttestation*:"
                         "*/NewKeyGenerationTest.LimitedUsageRsaWithAttestation*:"
