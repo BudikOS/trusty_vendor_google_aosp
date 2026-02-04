@@ -29,6 +29,7 @@ import multiprocessing
 import os
 import pathlib
 import re
+import shlex
 import shutil
 import stat
 import subprocess
@@ -317,12 +318,24 @@ def build(args):
     # build projects
     failed = []
 
+    # There are multiple generated outputs (i.e. lib.rs and rules.mk) but they
+    # all point to the same generated outdir after `dirname`.
+    microdroid_kernel_hashes_rs = shlex.split(
+            os.getenv("MICRODROID_KERNEL_HASHES_RS", None) or
+            "trusty/user/base/lib/stub_microdroid_kernel_hashes")[0]
+    platform_security_patch_timestamp_rs = shlex.split(
+            os.getenv("PLATFORM_SECURITY_PATCH_TIMESTAMP_RS", None) or
+            "trusty/user/base/lib/stub_platform_security_patch_timestamp")[0]
+
     for project in args.project:
         cmd = (
             f"export BUILDROOT={args.build_root};"
             f"export BUILDID={args.buildid};"
             f"export ANDROID_BUILD_ARTIFACTS={args.android_artifacts};"
             f"export KERNEL_BUILD_ARTIFACTS={args.kernel_artifacts};"
+            f"export MICRODROID_KERNEL_HASHES_RS={microdroid_kernel_hashes_rs};"
+            "export PLATFORM_SECURITY_PATCH_TIMESTAMP_RS="
+            f"{platform_security_patch_timestamp_rs};"
             f"{nice} $BUILDTOOLS_BINDIR/make {project} "
             f"-f $LKROOT/makefile -j {args.jobs}"
         )
