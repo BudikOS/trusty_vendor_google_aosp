@@ -306,7 +306,7 @@ genrule {
     ],
     // IMPORTANT: OUT_EXT=bin for arm64
     // the raw binary (not the elf) is needed for the avb signature process
-    cmd: "PROJECT_NAME=vm-arm64-memshare" + select(soong_config_variable("trusty_system_vm", "buildtype"), {
+    cmd: "PROJECT_NAME=vm-arm64-memshare" + select(soong_config_variable("trusty_vendor_vm", "buildtype"), {
         "userdebug": "-userdebug",
         "eng": "-userdebug",
         default: "-user",
@@ -555,7 +555,7 @@ prebuilt_etc {
 
 prebuilt_etc {
     name: "trusty_memshare_vm_unsigned",
-    enabled: select((os(), arch(), soong_config_variable("trusty_system_vm", "enabled")), {
+    enabled: select((os(), arch(), soong_config_variable("trusty_vendor_vm", "enabled")), {
         ("android", "arm64", true): true,
         ("android", "x86_64", true): false,
         (default, default, default): false,
