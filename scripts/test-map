@@ -114,9 +114,6 @@
                 include("trusty/user/base/build-config-usertests"),
                 include("trusty/user/app/sample/build-config-boottests"),
             ]),
-            androidtests(
-                include("./build-config-android-tests-without-hafnium")
-            ),
         ],
     ),
     testmap(
@@ -152,9 +149,6 @@
                     storage_tp=False,
                     storage_boot=False,
                 ),
-            ),
-            androidtests(
-                include("./build-config-android-tests-without-hafnium")
             ),
             # Android shell port tests - same as above, but triggered with
             # Linux + android userspace present
