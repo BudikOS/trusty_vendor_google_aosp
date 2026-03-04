@@ -168,7 +168,7 @@
         ],
         tests=[
             androidtests(
-                include("trusty/user/desktop/build-config-usertests"))
+                include("trusty/user/desktop/build-config-usertests", optional=True))
         ],
     ),
 ]
