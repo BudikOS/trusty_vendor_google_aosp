@@ -30,6 +30,7 @@ dirgroup {
         ":trusty_dirgroup_external_libcxxabi",
         ":trusty_dirgroup_external_nanopb-c",
         ":trusty_dirgroup_external_open-dice",
+        ":trusty_dirgroup_external_python_fdt",
         ":trusty_dirgroup_external_python_jinja",
         ":trusty_dirgroup_external_python_markupsafe",
         ":trusty_dirgroup_external_python_six",
