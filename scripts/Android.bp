@@ -347,6 +347,7 @@ cc_genrule {
         "trusty_aosp.gen.defaults",
     ],
     srcs: [
+        ":desktop_trusty_build_params_rs",
         ":microdroid_kernel_hashes_rs",
         ":platform_security_patch_timestamp_rs",
     ],
@@ -354,6 +355,8 @@ cc_genrule {
         "trusty_desktop_vm_arm64.bin",
     ],
     cmd: "PROJECT_NAME=desktop-arm64; OUT_EXT=bin;" +
+        "DESKTOP_TRUSTY_BUILD_PARAMS_RS=" +
+        "$$(dirname $(locations :desktop_trusty_build_params_rs));" +
         "MICRODROID_KERNEL_HASHES_RS=" +
         "$$(dirname $(locations :microdroid_kernel_hashes_rs));" +
         "PLATFORM_SECURITY_PATCH_TIMESTAMP_RS=" +
@@ -373,6 +376,7 @@ cc_genrule {
         "trusty_aosp.gen.defaults",
     ],
     srcs: [
+        ":desktop_trusty_build_params_rs",
         ":microdroid_kernel_hashes_rs",
         ":platform_security_patch_timestamp_rs",
     ],
@@ -380,6 +384,8 @@ cc_genrule {
         "trusty_desktop_vm_arm64_ext_boot.bin",
     ],
     cmd: "PROJECT_NAME=desktop-arm64_ext_boot; OUT_EXT=bin;" +
+        "DESKTOP_TRUSTY_BUILD_PARAMS_RS=" +
+        "$$(dirname $(locations :desktop_trusty_build_params_rs));" +
         "MICRODROID_KERNEL_HASHES_RS=" +
         "$$(dirname $(locations :microdroid_kernel_hashes_rs));" +
         "PLATFORM_SECURITY_PATCH_TIMESTAMP_RS=" +
@@ -399,6 +405,7 @@ cc_genrule {
         "trusty_aosp.gen.defaults",
     ],
     srcs: [
+        ":desktop_trusty_build_params_rs",
         ":microdroid_kernel_hashes_rs",
         ":platform_security_patch_timestamp_rs",
     ],
@@ -406,6 +413,8 @@ cc_genrule {
         "trusty_desktop_test_vm_arm64.bin",
     ],
     cmd: "PROJECT_NAME=desktop-arm64-test; OUT_EXT=bin;" +
+        "DESKTOP_TRUSTY_BUILD_PARAMS_RS=" +
+        "$$(dirname $(locations :desktop_trusty_build_params_rs));" +
         "MICRODROID_KERNEL_HASHES_RS=" +
         "$$(dirname $(locations :microdroid_kernel_hashes_rs));" +
         "PLATFORM_SECURITY_PATCH_TIMESTAMP_RS=" +
@@ -425,6 +434,7 @@ cc_genrule {
         "trusty_aosp.gen.defaults",
     ],
     srcs: [
+        ":desktop_trusty_build_params_rs",
         ":microdroid_kernel_hashes_rs",
         ":platform_security_patch_timestamp_rs",
     ],
@@ -432,6 +442,8 @@ cc_genrule {
         "trusty_desktop_vm_x86_64.bin",
     ],
     cmd: "PROJECT_NAME=desktop-x86_64; OUT_EXT=bin;" +
+        "DESKTOP_TRUSTY_BUILD_PARAMS_RS=" +
+        "$$(dirname $(locations :desktop_trusty_build_params_rs));" +
         "MICRODROID_KERNEL_HASHES_RS=" +
         "$$(dirname $(locations :microdroid_kernel_hashes_rs));" +
         "PLATFORM_SECURITY_PATCH_TIMESTAMP_RS=" +
@@ -451,6 +463,7 @@ cc_genrule {
         "trusty_aosp.gen.defaults",
     ],
     srcs: [
+        ":desktop_trusty_build_params_rs",
         ":microdroid_kernel_hashes_rs",
         ":platform_security_patch_timestamp_rs",
     ],
@@ -458,6 +471,8 @@ cc_genrule {
         "trusty_desktop_vm_x86_64_ext_boot.bin",
     ],
     cmd: "PROJECT_NAME=desktop-x86_64_ext_boot; OUT_EXT=bin;" +
+        "DESKTOP_TRUSTY_BUILD_PARAMS_RS=" +
+        "$$(dirname $(locations :desktop_trusty_build_params_rs));" +
         "MICRODROID_KERNEL_HASHES_RS=" +
         "$$(dirname $(locations :microdroid_kernel_hashes_rs));" +
         "PLATFORM_SECURITY_PATCH_TIMESTAMP_RS=" +
@@ -477,6 +492,7 @@ cc_genrule {
         "trusty_aosp.gen.defaults",
     ],
     srcs: [
+        ":desktop_trusty_build_params_rs",
         ":microdroid_kernel_hashes_rs",
         ":platform_security_patch_timestamp_rs",
     ],
@@ -484,6 +500,8 @@ cc_genrule {
         "trusty_desktop_test_vm_x86_64.bin",
     ],
     cmd: "PROJECT_NAME=desktop-x86_64-test; OUT_EXT=bin;" +
+        "DESKTOP_TRUSTY_BUILD_PARAMS_RS=" +
+        "$$(dirname $(locations :desktop_trusty_build_params_rs));" +
         "MICRODROID_KERNEL_HASHES_RS=" +
         "$$(dirname $(locations :microdroid_kernel_hashes_rs));" +
         "PLATFORM_SECURITY_PATCH_TIMESTAMP_RS=" +

@@ -320,6 +320,9 @@ def build(args):
 
     # There are multiple generated outputs (i.e. lib.rs and rules.mk) but they
     # all point to the same generated outdir after `dirname`.
+    desktop_trusty_build_params_rs = shlex.split(
+            os.getenv("DESKTOP_TRUSTY_BUILD_PARAMS_RS", None) or
+            "trusty/user/desktop/lib/desktop_trusty_build_params/stub")[0]
     microdroid_kernel_hashes_rs = shlex.split(
             os.getenv("MICRODROID_KERNEL_HASHES_RS", None) or
             "trusty/user/base/lib/stub_microdroid_kernel_hashes")[0]
@@ -333,6 +336,8 @@ def build(args):
             f"export BUILDID={args.buildid};"
             f"export ANDROID_BUILD_ARTIFACTS={args.android_artifacts};"
             f"export KERNEL_BUILD_ARTIFACTS={args.kernel_artifacts};"
+            "export DESKTOP_TRUSTY_BUILD_PARAMS_RS="
+            f"{desktop_trusty_build_params_rs};"
             f"export MICRODROID_KERNEL_HASHES_RS={microdroid_kernel_hashes_rs};"
             "export PLATFORM_SECURITY_PATCH_TIMESTAMP_RS="
             f"{platform_security_patch_timestamp_rs};"
