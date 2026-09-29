@@ -342,7 +342,9 @@ cc_genrule {
     enabled: false,
     arch: {
         arm64: {
-            enabled: true,
+            // the trusty desktop vms depend on virtualization artifacts that
+            // are not built on the gsi
+            enabled: false,
         },
     },
     defaults: [
@@ -371,7 +373,9 @@ cc_genrule {
     enabled: false,
     arch: {
         arm64: {
-            enabled: true,
+            // the trusty desktop vms depend on virtualization artifacts that
+            // are not built on the gsi
+            enabled: false,
         },
     },
     defaults: [
@@ -400,7 +404,9 @@ cc_genrule {
     enabled: false,
     arch: {
         arm64: {
-            enabled: true,
+            // the trusty desktop vms depend on virtualization artifacts that
+            // are not built on the gsi
+            enabled: false,
         },
     },
     defaults: [
